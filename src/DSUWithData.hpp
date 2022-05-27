@@ -1,4 +1,4 @@
-//const KeyT& key
+//
 // Created by gogagum on 18.04.22.
 //
 
@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <vector>
 #include <variant>
+#include <map>
 #include <unordered_set>
 #include <cassert>
 
@@ -15,7 +16,9 @@ namespace gdsu {
 
     ////////////////////////////////////////////////////////////////////////////
     // class DSUWithData<RootDataT, SimpleDataT>
-    template<class RootDataT, class SimpleDataT>
+    template<class KeyT,
+             template<class KeyT_> class RootDataT,
+             template<class KeyT_> class SimpleDataT>
     class DSUWithData {
     public:
 
@@ -23,7 +26,7 @@ namespace gdsu {
         // class DSUWithData<RootDataT, SimpleDataT>::Component
         class Component{
         public:
-            using OwnerT = DSUWithData<RootDataT, SimpleDataT>;
+            using OwnerT = DSUWithData<KeyT, RootDataT, SimpleDataT>;
         private:
             // Constructor
             // @param ownerPtr - DSU, in which component lays.
@@ -33,11 +36,11 @@ namespace gdsu {
         public:
             // Get root data from component.
             // @return root data
-            RootDataT& getRootData();
+            RootDataT<KeyT>& getRootData();
 
             // Get root data from component.
             // @return root data.
-            const RootDataT& getRootData() const;
+            const RootDataT<KeyT>& getRootData() const;
 
         private:
             OwnerT* _owner;
@@ -45,31 +48,51 @@ namespace gdsu {
             std::size_t _size;
         };
 
+        ////////////////////////////////////////////////////////////////////////
+        // class DSUWithData<RootDataT, SimpleDataT>::ElementPresenter
+        class ElementPresenter {
+        public:
+            using OwnerT = DSUWithData<KeyT, RootDataT, SimpleDataT>;
+
+        private:
+            ElementPresenter(OwnerT* owner, std::size_t index);
+
+        private:
+            OwnerT* _owner;
+            std::size_t _index;
+        };
+
         using ComponentRef = std::reference_wrapper<Component>;
         using ComponentConstRef = std::reference_wrapper<const Component>;
 
     public:
         // Constructor
-        DSUWithData(std::size_t size, const RootDataT& defaultData);
+        DSUWithData(std::size_t size, const RootDataT<KeyT>& defaultData);
+
+        // Constructor from data
+        DSUWithData(std::initializer_list<RootDataT<KeyT>> data);
 
         // Join two nodes
         Component& join(Component&& comp1, Component&& comp2);
+
+        std::vector<ElementPresenter> getPresenters() const;
 
     private:
 
         std::size_t _getRootIdxByIndex(std::size_t idx);
 
-        RootDataT& _getRootDataByIndex(std::size_t idx);
-        const RootDataT& _getRootDataByIndex(std::size_t idx) const;
+        RootDataT<KeyT>& _getRootDataByIndex(std::size_t idx);
+
+        const RootDataT<KeyT>& _getRootDataByIndex(std::size_t idx) const;
 
     private:
-        using DataVar = std::variant<RootDataT, SimpleDataT>;
-
+        using DataVar = std::variant<RootDataT<KeyT>, SimpleDataT<KeyT>>;
 
     private:
         std::vector<std::size_t> _parents;
         std::vector<DataVar> _data;
         std::unordered_set<ComponentConstRef> _components;
+        std::map<KeyT, std::size_t> _keyToIndex;
     };
 }
 
@@ -77,17 +100,37 @@ namespace gdsu {
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
-template<class RootDataT, class SimpleDataT>
-gdsu::DSUWithData<RootDataT, SimpleDataT>::DSUWithData(std::size_t size,
-                                                       const RootDataT& defaultData)
-  : _parents(size),
-    _data(size, defaultData) {
+template<class KeyT,
+         template<class KeyT_> class RootDataT,
+         template<class KeyT_> class SimpleDataT>
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
+        std::size_t size, const RootDataT<KeyT>& defaultData)
+    : _parents(size),
+      _data(size, defaultData) {
+    for (std::size_t i = 0; i < _parents.size(); ++i) {
+        _parents[i] = i;
+    }
 }
 
 //----------------------------------------------------------------------------//
-template<class RootDataT, class SimpleDataT>
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
+    std::initializer_list<RootDataT<KeyT>> data)
+    : _parents(data.size()),
+      _data(data) {
+    for (std::size_t i = 0; i < _parents.size(); ++i) {
+        _parents[i] = i;
+    }
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
 auto
-gdsu::DSUWithData<RootDataT, SimpleDataT>::join(
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::join(
         Component&& comp1, Component&& comp2) -> Component& {
     assert(comp1._owner == comp2._owner);
 
@@ -119,9 +162,24 @@ gdsu::DSUWithData<RootDataT, SimpleDataT>::join(
 }
 
 //----------------------------------------------------------------------------//
-template<class RootDataT, class SimpleDataT>
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+auto
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::getPresenters() const
+-> std::vector<ElementPresenter> {
+    std::vector<ElementPresenter> ret;
+    for (std::size_t i = 0; i < _data.size(); ++i) {
+        ret.push_back(ElementPresenter(this, i));
+    }
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
 std::size_t
-gdsu::DSUWithData<RootDataT, SimpleDataT>::_getRootIdxByIndex(std::size_t idx) {
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::_getRootIdxByIndex(std::size_t idx) {
     if(std::size_t parentIdx = _parents[idx]; parentIdx != idx) {
         // Rejoin
         _parents[idx] = _parents[parentIdx];
@@ -131,39 +189,58 @@ gdsu::DSUWithData<RootDataT, SimpleDataT>::_getRootIdxByIndex(std::size_t idx) {
 }
 
 //----------------------------------------------------------------------------//
-template<class RootDataT, class SimpleDataT>
-RootDataT&
-gdsu::DSUWithData<RootDataT, SimpleDataT>::_getRootDataByIndex(
+template<class KeyT,
+        template<class> class RootDataT,
+        template<class> class SimpleDataT>
+RootDataT<KeyT>&
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::_getRootDataByIndex(
         std::size_t idx) {
     return std::get<RootDataT>(_data[idx]);
 }
 
 //----------------------------------------------------------------------------//
-template<class RootDataT, class SimpleDataT>
-const RootDataT&
-gdsu::DSUWithData<RootDataT, SimpleDataT>::_getRootDataByIndex(
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+const RootDataT<KeyT>&
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::_getRootDataByIndex(
         std::size_t idx) const {
     return std::get<RootDataT>(_data[idx]);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
-template<class RootDataT, class SimpleDataT>
-gdsu::DSUWithData<RootDataT, SimpleDataT>::Component::Component(
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::Component::Component(
         OwnerT *ownerPtr, std::size_t idx, std::size_t size)
         : _owner(ownerPtr), _someIndex(idx), _size(size) {}
 
 //----------------------------------------------------------------------------//
-template<class RootDataT, class SimpleDataT>
-RootDataT&
-gdsu::DSUWithData<RootDataT, SimpleDataT>::Component::getRootData() {
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+RootDataT<KeyT>&
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::Component::getRootData() {
     _someIndex = _owner->_getRootIdxByIndex(_someIndex);
     return _owner->_getRootDataByIndex(_someIndex);
 }
 
 //----------------------------------------------------------------------------//
-template<class RootDataT, class SimpleDataT>
-const RootDataT&
-gdsu::DSUWithData<RootDataT, SimpleDataT>::Component::getRootData() const {
+template<class KeyT,
+        template<class> class RootDataT,
+        template<class> class SimpleDataT>
+const RootDataT<KeyT>&
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::Component::getRootData() const {
     _someIndex = _owner->_getRootIdxByIndex(_someIndex);
     return _owner->_getRootDataByIndex(_someIndex);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//----------------------------------------------------------------------------//
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::ElementPresenter::ElementPresenter(
+        OwnerT* owner, std::size_t index) : _owner(owner), _index(index) {}
