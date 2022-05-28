@@ -49,4 +49,4 @@ jobs:
 
       - name: Test
         shell: bash
-        run: ./build/a.out
+        run: ./build/simple_dsu_sample
