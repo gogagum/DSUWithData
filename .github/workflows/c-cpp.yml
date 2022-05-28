@@ -49,4 +49,6 @@ jobs:
 
       - name: Test
         shell: bash
-        run: ./build/simple_dsu_sample
+        run: |
+          ls
+          ./CMakeFiles/simple_dsu_sample
