@@ -50,4 +50,4 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          .simple_dsu_sample
+          ./simple_dsu_sample
