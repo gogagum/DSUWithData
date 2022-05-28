@@ -22,6 +22,10 @@ void default_dsu_test() {
     }
 
     assert(dsu.getNumberOfComponents() == 1);
+    auto component = dsu.getComponent(0);
+
+    assert(component.getSize() == 2);
+
 }
 
 
