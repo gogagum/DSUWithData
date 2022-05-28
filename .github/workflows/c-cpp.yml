@@ -1,0 +1,53 @@
+name: C/C++ CI
+
+# Controls when the action will run. Triggers the workflow on push
+on:
+  push:
+  pull_request:
+  release:
+  # tags:
+  # - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    name: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Print env
+        run: |
+          echo github.event.action: ${{ github.event.action }}
+          echo github.event_name: ${{ github.event_name }}
+
+      - name: Install dependencies on ubuntu
+        run: |
+          sudo apt-get update
+          sudo apt-get install cmake
+          cmake --version
+          gcc --version
+
+      - name: Configure
+        shell: bash
+        run: |
+          mkdir build
+          cmake \
+            -S . \
+            -B . \
+            -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build
+        shell: bash
+        run: cmake --build . --config Debug
+
+      - name: Test
+        shell: bash
+        run: |
+          ./simple_dsu_sample
