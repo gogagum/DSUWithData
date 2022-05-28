@@ -22,7 +22,7 @@ public:
 
     FloatAvgSimpleData joinWith(FloatAvgRootData&& other);
 
-    float getAvg() const;
+    [[nodiscard]] float getAvg() const;
 
 private:
     float _avg;

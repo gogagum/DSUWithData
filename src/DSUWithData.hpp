@@ -138,7 +138,7 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
 }
 
 //----------------------------------------------------------------------------//
-template<std::movable KeyT, class RootDataT, class SimpleDataT>
+template<class KeyT, class RootDataT, class SimpleDataT>
 template<template<class> class ContainerT>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
     ContainerT<KeyT>&& keys)
