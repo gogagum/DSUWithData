@@ -78,6 +78,9 @@ namespace gdsu {
         template<template<class>class ContainerT>
         explicit DSUWithData(const ContainerT<KeyT>& container);
 
+        template<template<class> class ContainerT>
+        explicit DSUWithData(ContainerT<KeyT>&& container);
+
         template<template<class>class ContainerT>
         explicit DSUWithData(const ContainerT<RootDataT<KeyT>>& container);
 
@@ -130,8 +133,22 @@ template<template<class> class ContainerT>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
     const ContainerT<KeyT>& keys)
         : _parents(keys.size()) {
-    for (auto& key : keys) {
+    for (const auto& key : keys) {
         _data.push_back(RootDataT<KeyT>(key));
+    }
+    _postConstruct();
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+template<template<class> class ContainerT>
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
+    ContainerT<KeyT>&& keys)
+        : _parents(keys.size()) {
+    for (auto& key : keys) {
+        _data.push_back(RootDataT<KeyT>(std::move(key)));
     }
     _postConstruct();
 }

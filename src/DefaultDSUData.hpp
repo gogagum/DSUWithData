@@ -37,6 +37,7 @@ namespace gdsu {
 
     public:
         explicit BaseSimpleDSUData(const KeyT& key);
+        explicit BaseSimpleDSUData(KeyT&& key);
     };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -48,7 +49,7 @@ namespace gdsu {
 
     public:
         explicit BaseRootDSUData(const KeyT& key);
-
+        explicit BaseRootDSUData(KeyT&& key);
     public:
         // Join with other root.
         // @param other - other data to join.
@@ -74,13 +75,24 @@ const KeyT &gdsu::BaseDSUData<KeyT>::getKey() const {
 //----------------------------------------------------------------------------//
 template<class KeyT>
 gdsu::BaseSimpleDSUData<KeyT>::BaseSimpleDSUData(const KeyT &key)
-  : BaseDSUData<KeyT>(key) { }
+    : BaseDSUData<KeyT>(key) { }
+
+//----------------------------------------------------------------------------//
+template<class KeyT>
+gdsu::BaseSimpleDSUData<KeyT>::BaseSimpleDSUData(KeyT&& key)
+    : BaseDSUData<KeyT>(std::move(key)) { }
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT>
 gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(const KeyT& key)
   : BaseDSUData<KeyT>(key)  {}
+
+//----------------------------------------------------------------------------//
+template<class KeyT>
+gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(KeyT&& key)
+    : BaseDSUData<KeyT>(std::move(key)) {}
+
 
 //----------------------------------------------------------------------------//
 template<class KeyT>
