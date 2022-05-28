@@ -28,6 +28,8 @@ namespace gdsu {
         KeyT _key;
     };
 
+    ////////////////////////////////////////////////////////////////////////////
+    // class BaseSimpleDSUData<KeyT>
     template<class KeyT>
     class BaseSimpleDSUData : public  BaseDSUData<KeyT> {
     public:
