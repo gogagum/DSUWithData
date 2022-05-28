@@ -77,8 +77,11 @@ namespace gdsu {
         // Constructor from data
         DSUWithData(std::initializer_list<KeyT> keys);
 
-        // Join two nodes
+        // Join two components
         Component& join(Component&& comp1, Component&& comp2);
+
+        // Join two components by keys
+        void joinByKeys(const KeyT& key1, const KeyT& key);
 
         // Get component.
         // @param key - search key.
@@ -150,16 +153,35 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::join(
     _parents[smallerComponent._rootIndex] = biggerComponent._rootIndex;
     biggerComponent._size += smallerComponent._size;
 
-    auto& biggerComponentData = std::get<RootDataT<KeyT>>(_data[biggerComponent._rootIndex]);
-    auto& smallerComponentData = std::get<RootDataT<KeyT>>(_data[smallerComponent._rootIndex]);
+    auto& biggerComponentData =
+            std::get<RootDataT<KeyT>>(_data[biggerComponent._rootIndex]);
+    auto& smallerComponentData =
+            std::get<RootDataT<KeyT>>(_data[smallerComponent._rootIndex]);
 
-    SimpleDataT newSmallerComponentData = biggerComponentData.joinWith(std::move(smallerComponentData));
+    SimpleDataT<KeyT> newSmallerComponentData =
+            biggerComponentData.joinWith(std::move(smallerComponentData));
 
     _data[smallerComponent._rootIndex] = std::move(newSmallerComponentData);
     _rootIdxToComponent.erase(smallerComponent._rootIndex);
     _rootIdxToComponent[biggerComponent._rootIndex] = std::move(biggerComponent);
 
     return _rootIdxToComponent[biggerComponent._rootIndex];
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+void
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::joinByKeys(const KeyT &key1,
+                                                            const KeyT &key2) {
+    std::size_t root1 = _getRootIdxByIndex(_keyToIndex[key1]);
+    std::size_t root2 = _getRootIdxByIndex(_keyToIndex[key2]);
+
+    auto& comp1 = _rootIdxToComponent[root1];
+    auto& comp2 = _rootIdxToComponent[root2];
+
+    join(std::move(comp1), std::move(comp2));
 }
 
 //----------------------------------------------------------------------------//
@@ -219,6 +241,8 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::getRootData(
     return _getRootDataByIndex(_keyToIndex[key]);
 }
 
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT,
@@ -276,7 +300,8 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::Component::operator=(
 template<class KeyT,
          template<class> class RootDataT,
          template<class> class SimpleDataT>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::Component::Component() : _rootIndex{}, _size{} {
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::Component::Component()
+        : _rootIndex{}, _size{} {
     assert(false);
 }
 

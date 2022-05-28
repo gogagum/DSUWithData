@@ -2,55 +2,73 @@
 // Created by gogagum on 20.04.22.
 //
 
+#include <string>
+
 #include "../src/DSUWithData.hpp"
 #include "../src/DefaultDSUData.hpp"
 
-void default_dsu_test() {
+//----------------------------------------------------------------------------//
+void create_test() {
     auto dsu =
-        gdsu::DSUWithData<int, gdsu::BaseRootDSUData, gdsu::BaseSimpleDSUData>({0, 1});
+        gdsu::DSUWithData<int, gdsu::BaseRootDSUData, gdsu::BaseSimpleDSUData>(
+                {0, 1, 3});
+
+    assert(dsu.getNumberOfComponents() == 3);
+}
+
+//----------------------------------------------------------------------------//
+void join_test() {
+    auto dsu =
+            gdsu::DSUWithData<int, gdsu::BaseRootDSUData, gdsu::BaseSimpleDSUData>({0, 1});
 
     assert(dsu.getNumberOfComponents() == 2);
 
-    ////////////////////////////////////////////////////////////////////////////
-    {
-        assert(dsu.getComponent(0).getSize() == 1);
-        assert(dsu.getComponent(1).getSize() == 1);
-    }
+    auto component0 = dsu.getComponent(0);
+    auto component1 = dsu.getComponent(1);
 
-    ////////////////////////////////////////////////////////////////////////////
-    {
-        auto comp1 = dsu.getComponent(0);
-        auto comp2 = dsu.getComponent(1);
+    dsu.join(std::move(component0), std::move(component1));
 
-        dsu.join(std::move(comp1), std::move(comp2));
-        assert(dsu.getNumberOfComponents() == 1);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    {
-        assert(dsu.getComponent(0).getSize() == 2);
-        assert(dsu.getComponent(1).getSize() == 2);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    {
-        const auto& rootData1 = dsu.getRootData(0);
-        const auto& rootData2 = dsu.getRootData(1);
-
-        assert(&rootData1 == &rootData2);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    {
-        const auto& rootData1 = dsu.getComponent(0).getRootData();
-        const auto& rootData2 = dsu.getComponent(1).getRootData();
-
-        assert(&rootData1 == &rootData2);
-    }
+    assert(dsu.getNumberOfComponents() == 1);
+    assert(dsu.getComponent(0).getSize() == 2);
+    assert(dsu.getComponent(1).getSize() == 2);
+    assert(&dsu.getComponent(0) == &dsu.getComponent(1));
 }
 
+//----------------------------------------------------------------------------//
+void join_by_key_test() {
+    auto dsu =
+            gdsu::DSUWithData<int, gdsu::BaseRootDSUData, gdsu::BaseSimpleDSUData>({0, 1});
+
+    assert(dsu.getNumberOfComponents() == 2);
+
+    dsu.joinByKeys(0, 1);
+
+    assert(dsu.getNumberOfComponents() == 1);
+    assert(dsu.getComponent(0).getSize() == 2);
+    assert(dsu.getComponent(1).getSize() == 2);
+    assert(&dsu.getComponent(0) == &dsu.getComponent(1));
+}
+
+//----------------------------------------------------------------------------//
+void join_five() {
+    auto dsu =
+            gdsu::DSUWithData<std::string,
+                              gdsu::BaseRootDSUData,
+                              gdsu::BaseSimpleDSUData>({"one", "two", "three", "four", "five"});
+
+    dsu.joinByKeys("one", "two");
+    dsu.joinByKeys("two", "three");
+
+    dsu.joinByKeys("four", "five");
+
+    assert(dsu.getNumberOfComponents() == 2);
+    assert(&dsu.getComponent("one") == &dsu.getComponent("three"));
+}
 
 int main() {
-    default_dsu_test();
+    create_test();
+    join_test();
+    join_by_key_test();
+    join_five();
     return 0;
 }
