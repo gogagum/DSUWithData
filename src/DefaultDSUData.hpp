@@ -6,6 +6,7 @@
 #define DSU_WITH_DATA_DEFAULTDSUDATA_HPP
 
 #include <cstdint>
+#include <utility>
 
 namespace gdsu {
 

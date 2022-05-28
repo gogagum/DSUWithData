@@ -51,3 +51,4 @@ jobs:
         shell: bash
         run: |
           ./simple_dsu_sample
+          ./float_avg_dsu_sample

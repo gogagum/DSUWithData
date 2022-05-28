@@ -10,7 +10,7 @@
 //----------------------------------------------------------------------------//
 void create_test() {
     auto dsu =
-        gdsu::DSUWithData<int, gdsu::BaseRootDSUData, gdsu::BaseSimpleDSUData>(
+        gdsu::DSUWithData<int, gdsu::BaseRootDSUData<int>, gdsu::BaseSimpleDSUData<int>>(
                 std::initializer_list<int>{0, 1, 3});
 
     assert(dsu.getNumberOfComponents() == 3);
@@ -24,7 +24,7 @@ void create_from_root_data() {
                     gdsu::BaseRootDSUData<int>(5)
             };
 
-    auto dsu = gdsu::DSUWithData<int, gdsu::BaseRootDSUData, gdsu::BaseSimpleDSUData>(rootDataVec);
+    auto dsu = gdsu::DSUWithData<int, gdsu::BaseRootDSUData<int>, gdsu::BaseSimpleDSUData<int>>(rootDataVec);
 
     assert(dsu.getNumberOfComponents() == 2);
 
@@ -36,7 +36,7 @@ void create_from_root_data() {
 //----------------------------------------------------------------------------//
 void join_test() {
     auto dsu =
-            gdsu::DSUWithData<int, gdsu::BaseRootDSUData, gdsu::BaseSimpleDSUData>(std::initializer_list<int>{0, 1});
+            gdsu::DSUWithData<int, gdsu::BaseRootDSUData<int>, gdsu::BaseSimpleDSUData<int>>(std::initializer_list<int>{0, 1});
 
     assert(dsu.getNumberOfComponents() == 2);
 
@@ -54,7 +54,7 @@ void join_test() {
 //----------------------------------------------------------------------------//
 void join_by_key_test() {
     auto dsu =
-            gdsu::DSUWithData<int, gdsu::BaseRootDSUData, gdsu::BaseSimpleDSUData>(std::initializer_list<int>{0, 1});
+            gdsu::DSUWithData<int, gdsu::BaseRootDSUData<int>, gdsu::BaseSimpleDSUData<int>>(std::initializer_list<int>{0, 1});
 
     assert(dsu.getNumberOfComponents() == 2);
 
@@ -70,8 +70,8 @@ void join_by_key_test() {
 void join_five() {
     auto dsu =
             gdsu::DSUWithData<std::string,
-                              gdsu::BaseRootDSUData,
-                              gdsu::BaseSimpleDSUData>(std::initializer_list<std::string>{"one", "two", "three", "four", "five"});
+                              gdsu::BaseRootDSUData<std::string>,
+                              gdsu::BaseSimpleDSUData<std::string>>(std::initializer_list<std::string>{"one", "two", "three", "four", "five"});
 
     dsu.joinByKeys("one", "two");
     dsu.joinByKeys("two", "three");
