@@ -74,8 +74,12 @@ namespace gdsu {
         };
 
     public:
-        // Constructor from data
-        DSUWithData(std::initializer_list<KeyT> keys);
+
+        template<template<class>class ContainerT>
+        explicit DSUWithData(const ContainerT<KeyT>& container);
+
+        template<template<class>class ContainerT>
+        explicit DSUWithData(const ContainerT<RootDataT<KeyT>>& container);
 
         // Join two components
         Component& join(Component&& comp1, Component&& comp2);
@@ -97,6 +101,8 @@ namespace gdsu {
         const RootDataT<KeyT>& getRootData(const KeyT& key);
 
     private:
+
+        void _postConstruct();
 
         std::size_t _getRootIdxByIndex(std::size_t idx);
 
@@ -120,22 +126,26 @@ namespace gdsu {
 template<class KeyT,
          template<class> class RootDataT,
          template<class> class SimpleDataT>
+template<template<class> class ContainerT>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
-    std::initializer_list<KeyT> keys)
+    const ContainerT<KeyT>& keys)
         : _parents(keys.size()) {
-    std::size_t i;
-    for (i = 0; i < _parents.size(); ++i) {
-        _parents[i] = i;
-    }
-
     for (auto& key : keys) {
         _data.push_back(RootDataT<KeyT>(key));
     }
+    _postConstruct();
+}
 
-    for (i = 0; i < _data.size(); ++i) {
-        _keyToIndex[std::get<RootDataT<KeyT>>(_data[i]).getKey()] = i;
-        _rootIdxToComponent.template emplace(std::make_pair(i, Component(this, i, 1)));
-    }
+//----------------------------------------------------------------------------//
+template<class KeyT,
+        template<class> class RootDataT,
+        template<class> class SimpleDataT>
+template<template<class> class ContainerT>
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
+        const ContainerT<RootDataT<KeyT>> &container)
+        : _parents(container.size()),
+          _data(container.begin(), container.end()){
+    _postConstruct();
 }
 
 //----------------------------------------------------------------------------//
@@ -241,7 +251,20 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::getRootData(
     return _getRootDataByIndex(_keyToIndex[key]);
 }
 
+//----------------------------------------------------------------------------//
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+void gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::_postConstruct() {
+    for (std::size_t i = 0; i < _parents.size(); ++i) {
+        _parents[i] = i;
+    }
 
+    for (std::size_t i = 0; i < _data.size(); ++i) {
+        _rootIdxToComponent.template emplace(std::make_pair(i, Component(this, i, 1)));
+        _keyToIndex[std::get<RootDataT<KeyT>>(_data[i]).getKey()] = i;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
