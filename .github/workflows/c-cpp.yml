@@ -27,12 +27,10 @@ jobs:
           echo github.event.action: ${{ github.event.action }}
           echo github.event_name: ${{ github.event_name }}
 
-
       - name: Install dependencies on ubuntu
         run: |
           sudo apt-get update
           sudo apt-get install cmake
-          ninja --version
           cmake --version
           gcc --version
 
@@ -48,3 +46,7 @@ jobs:
       - name: Build
         shell: bash
         run: cmake --build . --config Debug
+
+      - name: Test
+        shell: bash
+        run: ./build/a.out
