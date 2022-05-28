@@ -26,6 +26,12 @@ namespace gdsu {
         // class DSUWithData<RootDataT, SimpleDataT>::Component
         class Component{
         public:
+            struct Hash {
+            public:
+                std::size_t operator() (const Component& comp) const {
+                    return comp._someIndex;
+                }
+            };
             using OwnerT = DSUWithData<KeyT, RootDataT, SimpleDataT>;
         private:
             // Constructor
@@ -42,10 +48,14 @@ namespace gdsu {
             // @return root data.
             const RootDataT<KeyT>& getRootData() const;
 
+            bool operator==(const Component& other) const;
+
         private:
             OwnerT* _owner;
             mutable std::size_t _someIndex;
             std::size_t _size;
+
+            friend class DSUWithData<KeyT, RootDataT, SimpleDataT>;
         };
 
         ////////////////////////////////////////////////////////////////////////
@@ -66,9 +76,6 @@ namespace gdsu {
         using ComponentConstRef = std::reference_wrapper<const Component>;
 
     public:
-        // Constructor
-        DSUWithData(std::size_t size, const RootDataT<KeyT>& defaultData);
-
         // Constructor from data
         DSUWithData(std::initializer_list<RootDataT<KeyT>> data);
 
@@ -91,7 +98,7 @@ namespace gdsu {
     private:
         std::vector<std::size_t> _parents;
         std::vector<DataVar> _data;
-        std::unordered_set<ComponentConstRef> _components;
+        std::unordered_set<Component, typename Component::Hash> _components;
         std::map<KeyT, std::size_t> _keyToIndex;
     };
 }
@@ -101,27 +108,22 @@ namespace gdsu {
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT,
-         template<class KeyT_> class RootDataT,
-         template<class KeyT_> class SimpleDataT>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
-        std::size_t size, const RootDataT<KeyT>& defaultData)
-    : _parents(size),
-      _data(size, defaultData) {
-    for (std::size_t i = 0; i < _parents.size(); ++i) {
-        _parents[i] = i;
-    }
-}
-
-//----------------------------------------------------------------------------//
-template<class KeyT,
          template<class> class RootDataT,
          template<class> class SimpleDataT>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
     std::initializer_list<RootDataT<KeyT>> data)
     : _parents(data.size()),
-      _data(data) {
+      _data(data.begin(), data.end()) {
     for (std::size_t i = 0; i < _parents.size(); ++i) {
         _parents[i] = i;
+    }
+    for (std::size_t i = 0; i < _data.size(); ++i) {
+        auto getKey = [](const auto& data) {
+            return data.getKey();
+        };
+
+        _keyToIndex[std::visit(getKey, _data[i])] = i;
+        _components.insert(Component(this, i, 1));
     }
 }
 
@@ -235,6 +237,19 @@ const RootDataT<KeyT>&
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::Component::getRootData() const {
     _someIndex = _owner->_getRootIdxByIndex(_someIndex);
     return _owner->_getRootDataByIndex(_someIndex);
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT,
+         template<class> class RootDataT,
+         template<class> class SimpleDataT>
+bool
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::Component::operator==(
+        const Component &other) const {
+    const auto rootIdxThis = _owner->_getRootIdxByIndex(_someIndex);
+    const auto rootIdxOther = _owner->_getRootIdxByIndex(other._someIndex);
+
+    return rootIdxOther == rootIdxThis;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

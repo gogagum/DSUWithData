@@ -18,8 +18,11 @@ namespace gdsu {
     // class BaseDSUData<KeyT>
     template<class KeyT>
     class BaseDSUData {
+    public:
+        const KeyT& getKey() const;
+
     protected:
-        BaseDSUData(const KeyT& key);
+        explicit BaseDSUData(const KeyT& key);
 
     protected:
         KeyT _key;
@@ -28,10 +31,10 @@ namespace gdsu {
     template<class KeyT>
     class BaseSimpleDSUData : public  BaseDSUData<KeyT> {
     public:
-        BaseSimpleDSUData(const KeyT& key);
+        static constexpr DSUDataType dataType = eSimple;
 
-    private:
-        KeyT _key;
+    public:
+        explicit BaseSimpleDSUData(const KeyT& key);
     };
 
     ////////////////////////////////////////////////////////////////////////////
@@ -42,7 +45,7 @@ namespace gdsu {
         static constexpr DSUDataType dataType = eRoot;
 
     public:
-        BaseRootDSUData(const KeyT& key);
+        explicit BaseRootDSUData(const KeyT& key);
 
     public:
         // Join with other root.
@@ -54,10 +57,24 @@ namespace gdsu {
 
 #endif //DSU_WITH_DATA_DEFAULTDSUDATA_HPP
 
+////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT>
 gdsu::BaseDSUData<KeyT>::BaseDSUData(const KeyT &key) : _key(key) {}
 
+////////////////////////////////////////////////////////////////////////////////
+//----------------------------------------------------------------------------//
+template<class KeyT>
+const KeyT &gdsu::BaseDSUData<KeyT>::getKey() const {
+    return _key;
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT>
+gdsu::BaseSimpleDSUData<KeyT>::BaseSimpleDSUData(const KeyT &key)
+  : BaseDSUData<KeyT>(key) { }
+
+////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT>
 gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(const KeyT& key)
