@@ -58,17 +58,17 @@ TEST(DefaultData, JoinByKey) {
 
 TEST(DefaultData, JoinFive) {
     auto dsu =
-        gdsu::DSUWithData<std::string>(std::initializer_list<std::string>{"one", "two", "three", "four", "five"});
+        gdsu::DSUWithData<std::string>({"one", "two", "three", "four", "five"});
 
     dsu.joinByKeys("one", "two");
     dsu.joinByKeys("two", "three");
 
     dsu.joinByKeys("four", "five");
 
-    assert(dsu.getNumberOfComponents() == 2);
-    assert(&dsu.getComponent("one") == &dsu.getComponent("three"));
-    assert(&dsu.getComponent("four") == &dsu.getComponent("five"));
-    assert(&dsu.getComponent("one") != &dsu.getComponent("five"));
+    EXPECT_EQ(dsu.getNumberOfComponents(), 2);
+    EXPECT_EQ(&dsu.getComponent("one"), &dsu.getComponent("three"));
+    EXPECT_EQ(&dsu.getComponent("four"), &dsu.getComponent("five"));
+    EXPECT_FALSE(&dsu.getComponent("one") == &dsu.getComponent("five"));
 }
 
 TEST(CustomData, FloatAvgData) {
