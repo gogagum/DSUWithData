@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           mkdir build
-          cmake \
+          CXX="g++-11" cmake \
             -S . \
             -B . \
             -DCMAKE_BUILD_TYPE=Debug
