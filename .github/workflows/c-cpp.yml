@@ -15,8 +15,6 @@ jobs:
     # The type of runner that the job will run on
     name: build
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -50,6 +48,4 @@ jobs:
 
       - name: Test
         shell: bash
-        run: |
-          ./simple_dsu_sample
-          ./float_avg_dsu_sample
+        run: ctest
