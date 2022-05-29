@@ -24,7 +24,7 @@ void create_from_root_data() {
                     gdsu::BaseRootDSUData<int>(5)
             };
 
-    auto dsu = gdsu::DSUWithData<int, gdsu::BaseRootDSUData<int>, gdsu::BaseSimpleDSUData<int>>(rootDataVec);
+    auto dsu = gdsu::DSUWithData<int, gdsu::BaseRootDSUData<int>, gdsu::BaseSimpleDSUData<int>>(rootDataVec.begin(), rootDataVec.end());
 
     assert(dsu.getNumberOfComponents() == 2);
 

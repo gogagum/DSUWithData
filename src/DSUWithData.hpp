@@ -75,14 +75,22 @@ namespace gdsu {
 
     public:
 
-        template<template<class>class ContainerT>
-        explicit DSUWithData(const ContainerT<KeyT>& container);
+        DSUWithData(std::initializer_list<KeyT> keys);
 
-        template<template<class> class ContainerT>
-        explicit DSUWithData(ContainerT<KeyT>&& container);
+        DSUWithData(std::initializer_list<RootDataT> rootData);
 
-        template<template<class>class ContainerT>
-        explicit DSUWithData(const ContainerT<RootDataT>& container);
+        template<class IteratorT>
+                requires std::is_same_v<
+                             typename std::iterator_traits<IteratorT>::value_type,
+                             KeyT>
+        DSUWithData(IteratorT begin, IteratorT end);
+
+        template<class IteratorT>
+                requires std::is_same_v<
+                        typename std::iterator_traits<IteratorT>::value_type,
+                        RootDataT>
+        DSUWithData(IteratorT begin, IteratorT end);
+
 
         // Join two components
         Component& join(Component&& comp1, Component&& comp2);
@@ -127,9 +135,8 @@ namespace gdsu {
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class SimpleDataT>
-template<template<class> class ContainerT>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
-    const ContainerT<KeyT>& keys)
+    std::initializer_list<KeyT> keys)
         : _parents(keys.size()) {
     for (const auto& key : keys) {
         _data.push_back(RootDataT(key));
@@ -139,23 +146,42 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
 
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class SimpleDataT>
-template<template<class> class ContainerT>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
-    ContainerT<KeyT>&& keys)
-        : _parents(keys.size()) {
-    for (auto&& key : keys) {
-        _data.push_back(RootDataT(std::move(key)));
+        std::initializer_list<RootDataT> rootData)
+        : _parents(rootData.size()) {
+    for (const auto& rootDataI : rootData) {
+        _data.push_back(rootDataI);
     }
     _postConstruct();
 }
 
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class SimpleDataT>
-template<template<class> class ContainerT>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(
-        const ContainerT<RootDataT> &container)
-        : _parents(container.size()),
-          _data(container.begin(), container.end()){
+template<class IteratorT>
+requires std::is_same_v<
+        typename std::iterator_traits<IteratorT>::value_type,
+        KeyT>
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(IteratorT begin,
+                                                             IteratorT end)
+        : _parents(end - begin) {
+    for (auto keyIt = begin; keyIt != end; ++keyIt) {
+        _data.push_back(*keyIt);
+    }
+    _postConstruct();
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class SimpleDataT>
+template<class IteratorT>
+requires std::is_same_v<
+        typename std::iterator_traits<IteratorT>::value_type,
+        RootDataT>
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(IteratorT begin,
+                                                             IteratorT end)
+        : _parents(end - begin) {
+    for (auto rootDataIt = begin; rootDataIt != end; ++rootDataIt) {
+        _data.push_back(*rootDataIt);
+    }
     _postConstruct();
 }
 
@@ -260,6 +286,7 @@ void gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::_postConstruct() {
         _keyToIndex[std::get<RootDataT>(_data[i]).getKey()] = i;
     }
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
