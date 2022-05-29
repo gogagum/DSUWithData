@@ -11,7 +11,7 @@
 // class FloatAvgSimpleData
 class FloatAvgSimpleData : public gdsu::BaseSimpleDSUData<float> {
 public:
-    FloatAvgSimpleData(float key) : gdsu::BaseSimpleDSUData<float>(key) {};
+    FloatAvgSimpleData() : gdsu::BaseSimpleDSUData<float>(float{}) {};
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,8 +35,8 @@ private:
 //----------------------------------------------------------------------------//
 FloatAvgSimpleData FloatAvgRootData::joinWith(FloatAvgRootData &&other) {
     _size += other._size;
-    _avg = (this->_key + other._key) / static_cast<float>(_size);
-    return {other._key};
+    _avg = (this->_avg + other._avg) / static_cast<float>(_size);
+    return {};
 }
 
 //----------------------------------------------------------------------------//

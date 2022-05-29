@@ -4,7 +4,7 @@ project(float_avg_dsu_sample)
 project(dsu_test)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS -fsized-deallocation)
+set(CMAKE_CXX_FLAGS "-fsized-deallocation")
 
 include(FetchContent)
 FetchContent_Declare(

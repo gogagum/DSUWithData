@@ -59,8 +59,6 @@ namespace gdsu {
     };
 }
 
-#endif //DSU_WITH_DATA_DEFAULTDSUDATA_HPP
-
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT>
@@ -76,28 +74,32 @@ const KeyT &gdsu::BaseDSUData<KeyT>::getKey() const {
 //----------------------------------------------------------------------------//
 template<class KeyT>
 gdsu::BaseSimpleDSUData<KeyT>::BaseSimpleDSUData(const KeyT &key)
-    : BaseDSUData<KeyT>(key) { }
+        : BaseDSUData<KeyT>(key) { }
 
 //----------------------------------------------------------------------------//
 template<class KeyT>
 gdsu::BaseSimpleDSUData<KeyT>::BaseSimpleDSUData(KeyT&& key)
-    : BaseDSUData<KeyT>(std::move(key)) { }
+        : BaseDSUData<KeyT>(std::move(key)) { }
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT>
 gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(const KeyT& key)
-  : BaseDSUData<KeyT>(key)  {}
+        : BaseDSUData<KeyT>(key)  {}
 
 //----------------------------------------------------------------------------//
 template<class KeyT>
 gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(KeyT&& key)
-    : BaseDSUData<KeyT>(std::move(key)) {}
+        : BaseDSUData<KeyT>(std::move(key)) {}
 
 
 //----------------------------------------------------------------------------//
 template<class KeyT>
-inline gdsu::BaseSimpleDSUData<KeyT>
+gdsu::BaseSimpleDSUData<KeyT>
 gdsu::BaseRootDSUData<KeyT>::joinWith(BaseRootDSUData<KeyT> &&other) {
     return BaseSimpleDSUData<KeyT>(other._key);
 }
+
+#endif //DSU_WITH_DATA_DEFAULTDSUDATA_HPP
+
+

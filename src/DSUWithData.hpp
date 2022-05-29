@@ -12,13 +12,15 @@
 #include <unordered_set>
 #include <cassert>
 
+#include "DefaultDSUData.hpp"
+
 namespace gdsu {
 
     ////////////////////////////////////////////////////////////////////////////
     // class DSUWithData<RootDataT, SimpleDataT>
     template<class KeyT,
-             class RootDataT,
-             class SimpleDataT>
+             class RootDataT = BaseRootDSUData<KeyT>,
+             class SimpleDataT = BaseSimpleDSUData<KeyT>>
     class DSUWithData {
     public:
 
@@ -286,7 +288,6 @@ void gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::_postConstruct() {
         _keyToIndex[std::get<RootDataT>(_data[i]).getKey()] = i;
     }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
