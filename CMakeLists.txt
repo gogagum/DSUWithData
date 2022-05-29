@@ -14,9 +14,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(googletest)
 
-add_executable(simple_dsu_sample samples/simple_dsu_sample.cpp)
-add_executable(float_avg_dsu_sample samples/float_avg_dsu_sample.cpp)
-
 enable_testing()
 
 add_executable(
