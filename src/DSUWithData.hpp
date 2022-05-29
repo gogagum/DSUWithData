@@ -93,12 +93,13 @@ namespace gdsu {
                         RootDataT>
         DSUWithData(IteratorT begin, IteratorT end);
 
-
         // Join two components
         Component& join(Component&& comp1, Component&& comp2);
 
         // Join two components by keys
         void joinByKeys(const KeyT& key1, const KeyT& key);
+
+        bool inSameComponent(const KeyT& key1, const KeyT& key2) const;
 
         // Get component.
         // @param key - search key.
@@ -117,7 +118,7 @@ namespace gdsu {
 
         void _postConstruct();
 
-        std::size_t _getRootIdxByIndex(std::size_t idx);
+        std::size_t _getRootIdxByIndex(std::size_t idx) const;
 
         RootDataT& _getRootDataByIndex(std::size_t idx);
 
@@ -125,10 +126,10 @@ namespace gdsu {
         using DataVar = std::variant<RootDataT, SimpleDataT>;
 
     private:
-        std::vector<std::size_t> _parents;
+        mutable std::vector<std::size_t> _parents;
         std::vector<DataVar> _data;
         std::map<std::size_t, Component> _rootIdxToComponent;
-        std::map<KeyT, std::size_t> _keyToIndex;
+        mutable std::map<KeyT, std::size_t> _keyToIndex;
     };
 }
 
@@ -231,8 +232,18 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::joinByKeys(const KeyT &key1,
 
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class SimpleDataT>
+bool gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::inSameComponent(
+        const KeyT& key1, const KeyT& key2) const {
+    const std::size_t root1Idx = _getRootIdxByIndex(_keyToIndex[key1]);
+    const std::size_t root2Idx = _getRootIdxByIndex(_keyToIndex[key2]);
+
+    return root1Idx == root2Idx;
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class SimpleDataT>
 std::size_t
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::_getRootIdxByIndex(std::size_t idx) {
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::_getRootIdxByIndex(std::size_t idx) const {
     if(std::size_t parentIdx = _parents[idx]; parentIdx != idx) {
         // Rejoin
         _parents[idx] = _parents[parentIdx];

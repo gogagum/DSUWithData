@@ -56,6 +56,16 @@ TEST(DefaultData, JoinByKey) {
     EXPECT_EQ(&dsu.getComponent(0), &dsu.getComponent(1));
 }
 
+TEST(DefaultData, TestInSameComponent) {
+    auto dsu = gdsu::DSUWithData<int>{1, 2, 3, 4, 5};
+
+    ASSERT_FALSE(dsu.inSameComponent(1, 2));
+
+    dsu.joinByKeys(1, 2);
+
+    ASSERT_TRUE(dsu.inSameComponent(1, 2));
+}
+
 TEST(DefaultData, JoinFive) {
     auto dsu =
         gdsu::DSUWithData<std::string>({"one", "two", "three", "four", "five"});
