@@ -34,7 +34,9 @@ namespace gdsu {
             // @param ownerPtr - DSU, in which component lays.
             // @param idx - implementation index of the component.
             // @param size - number of elements in the component.
-            Component(OwnerT* ownerPtr, std::size_t rootIdx, std::size_t size);
+            Component(OwnerT* ownerPtr,
+                      std::size_t rootIdx,
+                      std::size_t size);
 
 
         public:
@@ -167,8 +169,12 @@ requires std::is_same_v<
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(IteratorT begin,
                                                              IteratorT end)
         : _parents(end - begin) {
+    std::set<KeyT> addedKeys;
     for (auto keyIt = begin; keyIt != end; ++keyIt) {
-        _data.push_back(*keyIt);
+        if (addedKeys.find(*keyIt) == addedKeys.end()) {
+            _data.push_back(RootDataT(*keyIt));
+            addedKeys.insert(*keyIt);
+        }
     }
     _postConstruct();
 }

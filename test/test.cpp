@@ -26,6 +26,23 @@ TEST(DefaultData, RootDataConstructor) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 1);
 }
 
+TEST(DefaultData, ConstructFromVector) {
+    auto keysVec = std::vector{1, 2, 3};
+    auto dsu = gdsu::DSUWithData<int>{keysVec.begin(), keysVec.end()};
+
+    EXPECT_EQ(dsu.getNumberOfComponents(), 3);
+    dsu.joinByKeys(2, 3);
+    EXPECT_EQ(dsu.getNumberOfComponents(), 2);
+}
+
+TEST(DefaultData, ConstructFromVectorRepeatingKeys) {
+    auto keysVec = std::vector{1, 2, 2};
+    auto dsu = gdsu::DSUWithData<int>{keysVec.begin(), keysVec.end()};
+
+    EXPECT_EQ(dsu.getNumberOfComponents(), 2);
+    EXPECT_EQ(dsu.getComponent(2).getSize(), 1);
+}
+
 TEST(DefaultData, Join) {
     auto dsu = gdsu::DSUWithData<int>(std::initializer_list<int>{0, 1});
 
