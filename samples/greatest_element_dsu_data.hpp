@@ -8,7 +8,7 @@
 #include <functional>
 #include "../src/DefaultDSUData.hpp"
 
-template<class KeyT, class Comp = std::less<KeyT>>
+template<class KeyT>
 class GreatestElementSimpleDsuData : gdsu::BaseSimpleDSUData<KeyT> {
 public:
     GreatestElementSimpleDsuData() : gdsu::BaseSimpleDSUData<KeyT>(KeyT{}) {};
@@ -20,11 +20,11 @@ public:
     explicit GreatestElementRootDsuData(const KeyT& key)
             : gdsu::BaseRootDSUData<KeyT>(key), _size(1), _greatest(key) {};
 
-    GreatestElementSimpleDsuData<KeyT, Comp> joinWith(GreatestElementRootDsuData<KeyT, Comp>&& other) {
+    GreatestElementSimpleDsuData<KeyT> joinWith(GreatestElementRootDsuData<KeyT, Comp>&& other) {
         if (Comp()(_greatest, other._greatest)) {
             _greatest = other._greatest;
         }
-        return GreatestElementSimpleDsuData<KeyT, Comp>();
+        return GreatestElementSimpleDsuData<KeyT>();
     }
 
     [[nodiscard]] const KeyT& getGreatest() const { return _greatest; };
