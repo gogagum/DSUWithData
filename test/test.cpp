@@ -2,6 +2,9 @@
 // Created by gogagum on 29.05.22.
 //
 
+#include <vector>
+#include <list>
+
 #include <gtest/gtest.h>
 #include "../src/DSUWithData.hpp"
 #include "../samples/test_dsu_data.hpp"
@@ -42,6 +45,16 @@ TEST(DefaultData, ConstructFromVectorRepeatingKeys) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
     EXPECT_EQ(dsu.getComponent(2).getSize(), 1);
 }
+
+TEST(DefaultData, ConstructFromList) {
+    auto keysList = std::list{1, 2, 3};
+    auto dsu = gdsu::DSUWithData<int>{keysList.begin(), keysList.end()};
+
+    EXPECT_EQ(dsu.getNumberOfComponents(), 3);
+    dsu.joinByKeys(2, 3);
+    EXPECT_EQ(dsu.getNumberOfComponents(), 2);
+}
+
 
 TEST(DefaultData, Join) {
     auto dsu = gdsu::DSUWithData<int>(std::initializer_list<int>{0, 1});

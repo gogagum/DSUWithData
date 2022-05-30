@@ -167,8 +167,7 @@ requires std::is_same_v<
         typename std::iterator_traits<IteratorT>::value_type,
         KeyT>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(IteratorT begin,
-                                                             IteratorT end)
-        : _parents(end - begin) {
+                                                             IteratorT end) {
     std::set<KeyT> addedKeys;
     for (auto keyIt = begin; keyIt != end; ++keyIt) {
         if (addedKeys.find(*keyIt) == addedKeys.end()) {
@@ -176,6 +175,7 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT>::DSUWithData(IteratorT begin,
             addedKeys.insert(*keyIt);
         }
     }
+    _parents = std::vector<std::size_t>(addedKeys.size());
     _postConstruct();
 }
 
