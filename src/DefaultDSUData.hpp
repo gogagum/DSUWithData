@@ -24,7 +24,6 @@ namespace gdsu {
 
     protected:
         explicit BaseDSUData(const KeyT& key);
-
     protected:
         KeyT _key;
     };
@@ -91,7 +90,6 @@ gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(const KeyT& key)
 template<class KeyT>
 gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(KeyT&& key)
         : BaseDSUData<KeyT>(std::move(key)) {}
-
 
 //----------------------------------------------------------------------------//
 template<class KeyT>
