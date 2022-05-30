@@ -18,7 +18,8 @@ public:
 // class FloatAvgRootData
 class FloatAvgRootData : public gdsu::BaseRootDSUData<float> {
 public:
-    FloatAvgRootData(float key) : gdsu::BaseRootDSUData<float>(key), _size(1), _avg(key) {};
+    explicit FloatAvgRootData(float key)
+        : gdsu::BaseRootDSUData<float>(key), _size(1), _avg(key) {};
 
     FloatAvgSimpleData joinWith(FloatAvgRootData&& other);
 

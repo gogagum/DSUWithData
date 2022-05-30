@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(simple_dsu_sample)
-project(float_avg_dsu_sample)
+
 project(dsu_test)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -18,7 +17,8 @@ enable_testing()
 
 add_executable(
         dsu_test
-        test/test.cpp
+        test/default_data_tests.cpp
+        test/custom_data_tests.cpp
 )
 target_link_libraries(
         dsu_test

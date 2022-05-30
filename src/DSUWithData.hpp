@@ -17,7 +17,7 @@
 namespace gdsu {
 
     ////////////////////////////////////////////////////////////////////////////
-    // class DSUWithData<RootDataT, SimpleDataT>
+    // class src<RootDataT, SimpleDataT>
     template<class KeyT,
              class RootDataT = BaseRootDSUData<KeyT>,
              class SimpleDataT = BaseSimpleDSUData<KeyT>,
@@ -26,7 +26,7 @@ namespace gdsu {
     public:
 
         ////////////////////////////////////////////////////////////////////////
-        // class DSUWithData<RootDataT, SimpleDataT>::Component
+        // class src<RootDataT, SimpleDataT>::Component
         class Component{
         public:
             using OwnerT = DSUWithData<KeyT, RootDataT, SimpleDataT>;
@@ -44,7 +44,7 @@ namespace gdsu {
 
             // No argument constructor.
             // Must not be called.
-            // TODOGG: to be erased somehow.
+            // TODO: to be erased somehow.
             Component();
 
             // Copy constructor
