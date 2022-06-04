@@ -135,4 +135,13 @@ TEST(DefaultData, JoinFive) {
     EXPECT_FALSE(&dsu.getComponent("one") == &dsu.getComponent("five"));
 }
 
+TEST(DefaultData, SelfJoin) {
+    auto dsu =
+            gdsu::DSUWithData<int>{2, 3, 4, 5};
+
+    dsu.joinByKeys(2, 2);
+
+    EXPECT_EQ(dsu.getComponent(2).getSize(), 1);
+}
+
 

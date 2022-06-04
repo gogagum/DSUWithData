@@ -25,5 +25,5 @@ TEST(CustomData, GreatestData) {
     dsu.joinByKeys(6, 3);
     dsu.joinByKeys(6, 1);
 
-    ASSERT_EQ(dsu.getComponent(3).getRootData().getGreatest(), 6);
+    ASSERT_EQ(dsu.getRootData(3).getGreatest(), 6);
 }
