@@ -39,17 +39,13 @@ namespace gdsu {
         class Component{
         public:
             using OwnerT = DSUWithData<KeyT, RootDataT, SimpleDataT>;
-        private:
+        public:
             // Constructor
             // @param ownerPtr - DSU, in which component lays.
             // @param idx - implementation index of the component.
             // @param size - number of elements in the component.
-            Component(OwnerT* ownerPtr,
-                      std::size_t rootIdx,
+            Component(std::size_t rootIdx,
                       std::size_t size);
-
-
-        public:
 
             // No argument constructor.
             // Must not be called.
@@ -79,7 +75,7 @@ namespace gdsu {
             std::size_t _size;               // Size of the component
 
         private:
-            friend class DSUWithData<KeyT, RootDataT, SimpleDataT>;
+            friend class DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>;
         };
 
     public:
@@ -398,7 +394,7 @@ void gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_postConstruct() {
         _parents[i] = i;
     }
     for (std::size_t i = 0; i < _data.size(); ++i) {
-        _rootIdxToComponent.emplace(std::make_pair(i, Component(this, i, 1)));
+        _rootIdxToComponent.emplace(std::make_pair(i, Component(i, 1)));
         _keyToIndex[std::get<RootDataT>(_data[i]).getKey()] = i;
     }
 }
@@ -423,7 +419,7 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getComponent(
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::Component::Component(
-        OwnerT *ownerPtr, std::size_t rootIdx, std::size_t size)
+        std::size_t rootIdx, std::size_t size)
         : _rootIndex(rootIdx), _size(size) {}
 
 //----------------------------------------------------------------------------//

@@ -27,3 +27,34 @@ TEST(CustomData, GreatestData) {
 
     ASSERT_EQ(dsu.getRootData(3).getGreatest(), 6);
 }
+
+TEST(CustomData, GreatestString) {
+    using TestDsuType = gdsu::DSUWithData<std::string,
+                                          GreatestElementRootDsuData<std::string>,
+                                          GreatestElementSimpleDsuData<std::string>>;
+
+    auto dsu = TestDsuType(std::initializer_list<std::string>{"aba", "caba", "ebgdae", "crmn", "ebfgd"});
+
+    EXPECT_EQ(dsu.getRootData("ebgdae").getGreatest(), "ebgdae");
+
+    dsu.joinByKeys("caba", "crmn");
+
+    EXPECT_EQ(dsu.getRootData("caba").getGreatest(), "crmn");
+    EXPECT_EQ(dsu.getComponentSize("caba"), 2);
+}
+
+TEST(CustomData, SmallestString) {
+    using TestDsuType2 = gdsu::DSUWithData<std::string,
+            GreatestElementRootDsuData<std::string, std::greater<>>,
+            GreatestElementSimpleDsuData<std::string>,
+            std::greater<std::string>>;
+
+    auto dsu = TestDsuType2(std::initializer_list<std::string>{"aba", "caba", "ebgdae", "crmn", "ebfgd"});
+
+    EXPECT_EQ(dsu.getRootData("ebgdae").getGreatest(), "ebgdae");
+
+    dsu.joinByKeys("caba", "crmn");
+
+    EXPECT_EQ(dsu.getRootData("crmn").getGreatest(), "caba");
+    EXPECT_EQ(dsu.getComponentSize("caba"), 2);
+}
