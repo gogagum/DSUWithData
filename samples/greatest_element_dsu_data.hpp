@@ -11,10 +11,8 @@
 template<class KeyT, class Comp = std::less<KeyT>>
 class GreatestElementRootDsuData : public gdsu::BaseRootDSUData<KeyT> {
 public:
-    GreatestElementRootDsuData() { assert(false); }
-
     explicit GreatestElementRootDsuData(const KeyT& key)
-            : gdsu::BaseRootDSUData<KeyT>(key), _size(1), _greatest(key) {};
+            : gdsu::BaseRootDSUData<KeyT>(key), _greatest(key) {};
 
     void joinWith(GreatestElementRootDsuData<KeyT, Comp>&& other) {
         if (Comp()(_greatest, other._greatest)) {
@@ -26,7 +24,6 @@ public:
 
 private:
     KeyT _greatest;
-    std::size_t _size;
 };
 
 #endif //DSU_TEST_GREATEST_ELEMENT_DSU_DATA_HPP

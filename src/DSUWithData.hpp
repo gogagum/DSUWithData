@@ -31,6 +31,14 @@ namespace gdsu {
             }
         };
 
+        class ImplRootDataT : public RootDataT {
+        public:
+            ImplRootDataT() : RootDataT(std::declval<KeyT>()) { assert(false); };
+            explicit ImplRootDataT(const KeyT& key) : RootDataT(key) {};
+            explicit ImplRootDataT(KeyT&& key) : RootDataT(std::move(key)) {};
+            explicit ImplRootDataT(const RootDataT& other) : RootDataT(other) {};
+        };
+
     private:
 
         ////////////////////////////////////////////////////////////////////////
@@ -162,7 +170,7 @@ namespace gdsu {
         // Parents relations info
         mutable std::vector<std::size_t> _parents;
         // Vector with data objects
-        std::unordered_map<std::size_t, RootDataT> _data;
+        std::unordered_map<std::size_t, ImplRootDataT> _data;
         // Map with components
         mutable std::unordered_map<std::size_t, Component> _rootIdxToComponent;
         // Key to index mapping
@@ -180,7 +188,7 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
     auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
     for (const auto& key : keys) {
         if (!addedKeys.contains(&key)) {
-            _data.template emplace(std::make_pair(addedKeys.size(), RootDataT(key)));
+            _data.template emplace(std::make_pair(addedKeys.size(), ImplRootDataT(key)));
             addedKeys.insert(&key);
         }
     }

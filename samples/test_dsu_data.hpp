@@ -11,8 +11,6 @@
 // class FloatAvgRootData
 class FloatAvgRootData : public gdsu::BaseRootDSUData<float> {
 public:
-    FloatAvgRootData() { assert(false); };
-
     explicit FloatAvgRootData(float key)
         : gdsu::BaseRootDSUData<float>(key), _size(1), _avg(key) {};
 

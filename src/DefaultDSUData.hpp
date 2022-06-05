@@ -15,7 +15,6 @@ namespace gdsu {
     template<class KeyT>
     class BaseRootDSUData {
     public:
-        BaseRootDSUData() { assert(false); };
         explicit BaseRootDSUData(const KeyT& key);
         explicit BaseRootDSUData(KeyT&& key);
 
