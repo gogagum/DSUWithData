@@ -44,7 +44,7 @@ TEST(CustomData, GreatestString) {
 TEST(CustomData, SmallestString) {
     using TestDsuType2 = gdsu::DSUWithData<std::string,
             GreatestElementRootDsuData<std::string, std::greater<>>,
-            std::greater<std::string>>;
+            std::greater<>>;
 
     auto dsu = TestDsuType2(std::initializer_list<std::string>{"aba", "caba", "ebgdae", "crmn", "ebfgd"});
 
