@@ -33,7 +33,9 @@ namespace gdsu {
 
         class ImplRootDataT : public RootDataT {
         public:
-            ImplRootDataT() : RootDataT(std::declval<KeyT>()) { assert(false); };
+            ImplRootDataT() : RootDataT(*static_cast<RootDataT*>(nullptr)) {  // TODO: do better
+                throw std::invalid_argument("Root data default constructor must not be called.");
+            };
             explicit ImplRootDataT(const KeyT& key) : RootDataT(key) {};
             explicit ImplRootDataT(KeyT&& key) : RootDataT(std::move(key)) {};
             explicit ImplRootDataT(const RootDataT& other) : RootDataT(other) {};
