@@ -176,12 +176,59 @@ TEST(DefaultData, JoinFive) {
 }
 
 TEST(DefaultData, SelfJoin) {
-    auto dsu =
-            gdsu::DSUWithData<int>{2, 3, 4, 5};
+    auto dsu = gdsu::DSUWithData<int>{2, 3, 4, 5};
 
     dsu.joinByKeys(2, 2);
 
     EXPECT_EQ(dsu.getComponent(2).getSize(), 1);
+}
+
+TEST(DefaultData, SelfJoinByComponent) {
+    auto dsu = gdsu::DSUWithData<int>{1, 2, 3, 4, 5};
+
+    auto& comp1 = dsu.getComponent(1);
+    auto& comp2 = dsu.getComponent(1);
+
+    dsu.join(std::move(comp1), std::move(comp2));
+
+    ASSERT_EQ(dsu.getNumberOfComponents(), 5);
+}
+
+TEST(DefaultData, GetComponent) {
+    auto dsu = gdsu::DSUWithData<int>{3, 4, 5, 6};
+
+    auto component = dsu.getComponent(4);
+
+    ASSERT_EQ(component.getSize(), 1);
+}
+
+TEST(DefaultData, JoinAllByKeysAndWatchComponent) {
+    auto dsu = gdsu::DSUWithData<int>{3, 4, 5, 6};
+
+    dsu.joinByKeys(3, 4);
+    dsu.joinByKeys(5, 6);
+
+    ASSERT_EQ(dsu.getComponent(4).getSize(), 2);
+    ASSERT_EQ(dsu.getComponent(3).getSize(), 2);
+    ASSERT_EQ(&dsu.getComponent(3), &dsu.getComponent(4));
+
+    ASSERT_EQ(dsu.getComponent(5).getSize(), 2);
+    ASSERT_EQ(dsu.getComponent(6).getSize(), 2);
+    ASSERT_EQ(&dsu.getComponent(5), &dsu.getComponent(6));
+
+    ASSERT_FALSE(&dsu.getComponent(5) == &dsu.getComponent(3));
+
+    dsu.joinByKeys(3, 6);
+
+    ASSERT_EQ(dsu.getNumberOfComponents(), 1);
+    ASSERT_EQ(dsu.getComponent(5).getSize(), 4);
+}
+
+TEST(DefaultData, GetRootData) {
+    auto dsu = gdsu::DSUWithData<int>{2, 3, 4, 5};
+
+    auto rootData = dsu.getRootData(3);
+    EXPECT_EQ(rootData.getKey(), 3);
 }
 
 
