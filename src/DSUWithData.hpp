@@ -297,7 +297,7 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_join(
     _rootIdxToComponent[biggerComponent._rootIndex] =
             std::move(biggerComponent);
 
-    _rootIdxToComponent[biggerComponent._rootIndex];
+    return _rootIdxToComponent[biggerComponent._rootIndex];
 }
 
 //----------------------------------------------------------------------------//
