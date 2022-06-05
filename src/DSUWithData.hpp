@@ -32,7 +32,7 @@ namespace gdsu {
             }
         };
 
-    public:
+    private:
 
         ////////////////////////////////////////////////////////////////////////
         // class src<RootDataT, SimpleDataT>::Component
@@ -119,14 +119,8 @@ namespace gdsu {
         DSUWithData(typename std::set<KeyT, Comp>::iterator begin,
                     typename std::set<KeyT, Comp>::iterator end);
 
-        // Join two components
-        // @param comp1 - first component
-        // @param comp2 - second component
-        // @return - component of a join result.
-        Component& join(Component&& comp1, Component&& comp2);
-
         // Join two components by keys
-        Component& joinByKeys(const KeyT& key1, const KeyT& key);
+        void joinByKeys(const KeyT& key1, const KeyT& key);
 
         // Check if two keys are of the same component
         // @param key1 - firstKey
@@ -139,10 +133,9 @@ namespace gdsu {
         bool inSameComponent(const RootDataT& rootData1,
                              const RootDataT& rootData2) const;
 
-        // Get component.
-        // @param key - search key.
-        // @return component of the key.
-        Component& getComponent(const KeyT& key);
+        // Get component size
+        // @param key - key
+        std::size_t getComponentSize(const KeyT& key) const;
 
         // Get number of components.
         // @return number of components.
@@ -162,6 +155,16 @@ namespace gdsu {
 
         RootDataT& _getRootDataByIndex(std::size_t idx);
 
+        Component& _getComponent(const KeyT& key);
+
+        const Component& _getComponent(const KeyT& key) const;
+
+        // Join two components
+        // @param comp1 - first component
+        // @param comp2 - second component
+        // @return - component of a join result.
+        Component& _join(Component&& comp1, Component&& comp2);
+
     private:
         using DataVar = std::variant<RootDataT, SimpleDataT>;
 
@@ -171,7 +174,7 @@ namespace gdsu {
         // Vector with data objects
         std::vector<DataVar> _data;
         // Map with components
-        std::unordered_map<std::size_t, Component> _rootIdxToComponent;
+        mutable std::unordered_map<std::size_t, Component> _rootIdxToComponent;
         // Key to index mapping
         mutable std::map<KeyT, std::size_t, Comp> _keyToIndex;
     };
@@ -267,7 +270,7 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
 auto
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::join(
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_join(
         Component&& comp1, Component&& comp2) -> Component& {
     if (&comp1 == &comp2) {
         return comp1;
@@ -294,26 +297,26 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::join(
     _rootIdxToComponent[biggerComponent._rootIndex] =
             std::move(biggerComponent);
 
-    return _rootIdxToComponent[biggerComponent._rootIndex];
+    _rootIdxToComponent[biggerComponent._rootIndex];
 }
 
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-auto
+void
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::joinByKeys(
         const KeyT &key1,
-        const KeyT &key2) -> Component& {
+        const KeyT &key2) {
     const std::size_t rootIdx1 = _getRootIdxByIndex(_keyToIndex[key1]);
     const std::size_t rootIdx2 = _getRootIdxByIndex(_keyToIndex[key2]);
 
     if (rootIdx1 == rootIdx2) {
-        return _rootIdxToComponent[rootIdx1];
+        return;
     }
 
     Component& comp1 = _rootIdxToComponent[rootIdx1];
     Component& comp2 = _rootIdxToComponent[rootIdx2];
 
-    return join(std::move(comp1), std::move(comp2));
+    _join(std::move(comp1), std::move(comp2));
 }
 
 //----------------------------------------------------------------------------//
@@ -341,7 +344,7 @@ bool gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::inSameComponent(
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
 auto
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::getComponent(
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getComponent(
         const KeyT& key) -> Component& {
     std::size_t index = _keyToIndex[key];
     std::size_t rootIndex = _getRootIdxByIndex(index);
@@ -398,6 +401,22 @@ void gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_postConstruct() {
         _rootIdxToComponent.emplace(std::make_pair(i, Component(this, i, 1)));
         _keyToIndex[std::get<RootDataT>(_data[i]).getKey()] = i;
     }
+}
+
+template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+std::size_t
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::getComponentSize(const KeyT& key) const {
+    return _getComponent(key).getSize();
+}
+
+template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+auto
+gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getComponent(
+        const KeyT &key) const -> const Component& {
+    std::size_t index = _keyToIndex[key];
+    std::size_t rootIndex = _getRootIdxByIndex(index);
+
+    return _rootIdxToComponent[rootIndex];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
