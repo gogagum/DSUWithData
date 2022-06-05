@@ -10,93 +10,38 @@
 
 namespace gdsu {
 
-    enum DSUDataType {
-        eRoot = 0,
-        eSimple = 1
-    };
-
-    ////////////////////////////////////////////////////////////////////////////
-    // class BaseDSUData<KeyT>
-    template<class KeyT>
-    class BaseDSUData {
-    public:
-        const KeyT& getKey() const;
-
-    protected:
-        explicit BaseDSUData(const KeyT& key);
-    protected:
-        KeyT _key;
-    };
-
-    ////////////////////////////////////////////////////////////////////////////
-    // class BaseSimpleDSUData<KeyT>
-    template<class KeyT>
-    class BaseSimpleDSUData : public  BaseDSUData<KeyT> {
-    public:
-        static constexpr DSUDataType dataType = eSimple;
-
-    public:
-        explicit BaseSimpleDSUData(const KeyT& key);
-        explicit BaseSimpleDSUData(KeyT&& key);
-    };
-
     ////////////////////////////////////////////////////////////////////////////
     // class BaseRootDSUData<KeyT>
     template<class KeyT>
-    class BaseRootDSUData : public BaseDSUData<KeyT> {
+    class BaseRootDSUData {
     public:
-        static constexpr DSUDataType dataType = eRoot;
-
-    public:
+        BaseRootDSUData() { assert(false); };
         explicit BaseRootDSUData(const KeyT& key);
         explicit BaseRootDSUData(KeyT&& key);
+
+        const KeyT& getKey() const { return _key; };
     public:
         // Join with other root.
         // @param other - other data to join.
-        // @return data to reset after join.
-        BaseSimpleDSUData<KeyT> joinWith(BaseRootDSUData<KeyT>&& other);
+        void joinWith(BaseRootDSUData<KeyT>&& other);
+    private:
+        KeyT _key;
     };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT>
-gdsu::BaseDSUData<KeyT>::BaseDSUData(const KeyT &key) : _key(key) {}
-
-////////////////////////////////////////////////////////////////////////////////
-//----------------------------------------------------------------------------//
-template<class KeyT>
-const KeyT &gdsu::BaseDSUData<KeyT>::getKey() const {
-    return _key;
-}
+gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(const KeyT& key) : _key(key) {}
 
 //----------------------------------------------------------------------------//
 template<class KeyT>
-gdsu::BaseSimpleDSUData<KeyT>::BaseSimpleDSUData(const KeyT &key)
-        : BaseDSUData<KeyT>(key) { }
+gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(KeyT&& key) : _key(std::move(key)) {}
 
 //----------------------------------------------------------------------------//
 template<class KeyT>
-gdsu::BaseSimpleDSUData<KeyT>::BaseSimpleDSUData(KeyT&& key)
-        : BaseDSUData<KeyT>(std::move(key)) { }
-
-////////////////////////////////////////////////////////////////////////////////
-//----------------------------------------------------------------------------//
-template<class KeyT>
-gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(const KeyT& key)
-        : BaseDSUData<KeyT>(key)  {}
-
-//----------------------------------------------------------------------------//
-template<class KeyT>
-gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(KeyT&& key)
-        : BaseDSUData<KeyT>(std::move(key)) {}
-
-//----------------------------------------------------------------------------//
-template<class KeyT>
-gdsu::BaseSimpleDSUData<KeyT>
-gdsu::BaseRootDSUData<KeyT>::joinWith(BaseRootDSUData<KeyT> &&other) {
-    return BaseSimpleDSUData<KeyT>(other._key);
-}
+void
+gdsu::BaseRootDSUData<KeyT>::joinWith(BaseRootDSUData<KeyT> &&other) {}
 
 #endif //DSU_WITH_DATA_DEFAULTDSUDATA_HPP
 

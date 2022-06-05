@@ -9,7 +9,7 @@
 
 TEST(CustomData, FloatAvgData) {
     auto dsu =
-        gdsu::DSUWithData<float, FloatAvgRootData, FloatAvgSimpleData>(std::initializer_list<float>{2, 3, 5});
+        gdsu::DSUWithData<float, FloatAvgRootData>(std::initializer_list<float>{2, 3, 5});
 
     dsu.joinByKeys(2, 3);
 
@@ -19,8 +19,7 @@ TEST(CustomData, FloatAvgData) {
 TEST(CustomData, GreatestData) {
     auto dsu =
             gdsu::DSUWithData<int,
-                              GreatestElementRootDsuData<int>,
-                              GreatestElementSimpleDsuData<int>>(std::initializer_list<int>{1, 3, 6, 3, 5});
+                              GreatestElementRootDsuData<int>>(std::initializer_list<int>{1, 3, 6, 3, 5});
 
     dsu.joinByKeys(6, 3);
     dsu.joinByKeys(6, 1);
@@ -30,8 +29,7 @@ TEST(CustomData, GreatestData) {
 
 TEST(CustomData, GreatestString) {
     using TestDsuType = gdsu::DSUWithData<std::string,
-                                          GreatestElementRootDsuData<std::string>,
-                                          GreatestElementSimpleDsuData<std::string>>;
+                                          GreatestElementRootDsuData<std::string>>;
 
     auto dsu = TestDsuType(std::initializer_list<std::string>{"aba", "caba", "ebgdae", "crmn", "ebfgd"});
 
@@ -46,7 +44,6 @@ TEST(CustomData, GreatestString) {
 TEST(CustomData, SmallestString) {
     using TestDsuType2 = gdsu::DSUWithData<std::string,
             GreatestElementRootDsuData<std::string, std::greater<>>,
-            GreatestElementSimpleDsuData<std::string>,
             std::greater<std::string>>;
 
     auto dsu = TestDsuType2(std::initializer_list<std::string>{"aba", "caba", "ebgdae", "crmn", "ebfgd"});

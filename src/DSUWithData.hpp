@@ -21,7 +21,6 @@ namespace gdsu {
     // class DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>
     template<class KeyT,
              class RootDataT = BaseRootDSUData<KeyT>,
-             class SimpleDataT = BaseSimpleDSUData<KeyT>,
              class Comp = std::less<KeyT>>
     class DSUWithData {
     private:
@@ -37,8 +36,6 @@ namespace gdsu {
         ////////////////////////////////////////////////////////////////////////
         // class src<RootDataT, SimpleDataT>::Component
         class Component{
-        public:
-            using OwnerT = DSUWithData<KeyT, RootDataT, SimpleDataT>;
         public:
             // Constructor
             // @param ownerPtr - DSU, in which component lays.
@@ -75,7 +72,7 @@ namespace gdsu {
             std::size_t _size;               // Size of the component
 
         private:
-            friend class DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>;
+            friend class DSUWithData<KeyT, RootDataT, Comp>;
         };
 
     public:
@@ -162,13 +159,10 @@ namespace gdsu {
         Component& _join(Component&& comp1, Component&& comp2);
 
     private:
-        using DataVar = std::variant<RootDataT, SimpleDataT>;
-
-    private:
         // Parents relations info
         mutable std::vector<std::size_t> _parents;
         // Vector with data objects
-        std::vector<DataVar> _data;
+        std::unordered_map<std::size_t, RootDataT> _data;
         // Map with components
         mutable std::unordered_map<std::size_t, Component> _rootIdxToComponent;
         // Key to index mapping
@@ -180,13 +174,13 @@ namespace gdsu {
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
+template<class KeyT, class RootDataT, class Comp>
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
         std::initializer_list<KeyT> keys) {
     auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
     for (const auto& key : keys) {
         if (!addedKeys.contains(&key)) {
-            _data.push_back(RootDataT(key));
+            _data.template emplace(std::make_pair(addedKeys.size(), RootDataT(key)));
             addedKeys.insert(&key);
         }
     }
@@ -194,8 +188,8 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
+template<class KeyT, class RootDataT, class Comp>
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
         std::initializer_list<RootDataT> rootData) {
     auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
     for (const auto& rootDataI : rootData) {
@@ -203,7 +197,7 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
         addedKeys.contains(&newKey)) {
             throw std::invalid_argument("Root data keys must not repeat.");
         } else {
-            _data.push_back(rootDataI);
+            _data.template emplace(std::make_pair(addedKeys.size(), rootDataI));
             addedKeys.insert(&newKey);
         }
     }
@@ -211,19 +205,19 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 template<class IteratorT>
 requires std::is_same_v<
              typename std::iterator_traits<IteratorT>::value_type,
              KeyT
          >
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
-        IteratorT begin, IteratorT end) {
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
+        IteratorT begin, IteratorT end) : _data() {
     auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
     for (auto keyIt = begin; keyIt != end; ++keyIt) {
         if (const KeyT& keyRef = *keyIt;
         !addedKeys.contains(&keyRef)) {
-            _data.push_back(RootDataT(keyRef));
+            _data.template emplace(std::make_pair(addedKeys.size(), RootDataT(keyRef)));
             addedKeys.insert(&keyRef);
         }
     }
@@ -231,42 +225,42 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 template<class IteratorT>
 requires std::is_same_v<
              typename std::iterator_traits<IteratorT>::value_type,
              RootDataT
          >
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
         IteratorT begin, IteratorT end)
-        : _parents(end - begin) {
+        : _parents(end - begin), _data() {
     auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
     for (auto rootDataIt = begin; rootDataIt != end; ++rootDataIt) {
         const KeyT& keyRef = rootDataIt->getKey();
         if (addedKeys.contains(&keyRef)) {
             throw std::invalid_argument("Root data keys must not repeat.");
         }
-        _data.push_back(*rootDataIt);
+        _data.template emplace(std::make_pair(addedKeys.size(), *rootDataIt));
         addedKeys.insert(&keyRef);
     }
     _postConstruct();
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
+template<class KeyT, class RootDataT, class Comp>
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
         typename std::set<KeyT, Comp>::iterator begin,
-        typename std::set<KeyT, Comp>::iterator end) {
-    for (auto keyIt = begin; keyIt != end; ++keyIt) {
-        _data.push_back(RootDataT(*keyIt));
+        typename std::set<KeyT, Comp>::iterator end) : _data() {
+    for (auto [keyIt, i] = std::make_pair(begin, 0ull); keyIt != end; ++keyIt, ++i) {
+        _data.template emplace(std::make_pair(i, RootDataT(*keyIt)));
     }
     _postConstruct();
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 auto
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_join(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::_join(
         Component&& comp1, Component&& comp2) -> Component& {
     if (&comp1 == &comp2) {
         return comp1;
@@ -280,15 +274,13 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_join(
     _parents[smallerComponent._rootIndex] = biggerComponent._rootIndex;
     biggerComponent._size += smallerComponent._size;
 
-    auto& biggerComponentData =
-            std::get<RootDataT>(_data[biggerComponent._rootIndex]);
-    auto& smallerComponentData =
-            std::get<RootDataT>(_data[smallerComponent._rootIndex]);
+    {
+        auto &biggerComponentData = _data[biggerComponent._rootIndex];
+        auto &smallerComponentData = _data[smallerComponent._rootIndex];
 
-    SimpleDataT newSmallerComponentData =
-            biggerComponentData.joinWith(std::move(smallerComponentData));
-
-    _data[smallerComponent._rootIndex] = std::move(newSmallerComponentData);
+        biggerComponentData.joinWith(std::move(smallerComponentData));
+    }
+    _data.erase(smallerComponent._rootIndex);
     _rootIdxToComponent.erase(smallerComponent._rootIndex);
     _rootIdxToComponent[biggerComponent._rootIndex] =
             std::move(biggerComponent);
@@ -297,9 +289,9 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_join(
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 void
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::joinByKeys(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::joinByKeys(
         const KeyT &key1,
         const KeyT &key2) {
     const std::size_t rootIdx1 = _getRootIdxByIndex(_keyToIndex[key1]);
@@ -316,8 +308,8 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::joinByKeys(
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-bool gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::inSameComponent(
+template<class KeyT, class RootDataT, class Comp>
+bool gdsu::DSUWithData<KeyT, RootDataT, Comp>::inSameComponent(
         const KeyT& key1, const KeyT& key2) const {
     const std::size_t root1Idx = _getRootIdxByIndex(_keyToIndex[key1]);
     const std::size_t root2Idx = _getRootIdxByIndex(_keyToIndex[key2]);
@@ -326,8 +318,8 @@ bool gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::inSameComponent(
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-bool gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::inSameComponent(
+template<class KeyT, class RootDataT, class Comp>
+bool gdsu::DSUWithData<KeyT, RootDataT, Comp>::inSameComponent(
         const RootDataT& rootData1, const RootDataT& rootData2) const {
     const std::size_t root1Idx =
             _getRootIdxByIndex(_keyToIndex[rootData1.getKey()]);
@@ -338,9 +330,9 @@ bool gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::inSameComponent(
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 auto
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getComponent(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getComponent(
         const KeyT& key) -> Component& {
     std::size_t index = _keyToIndex[key];
     std::size_t rootIndex = _getRootIdxByIndex(index);
@@ -349,25 +341,24 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getComponent(
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 std::size_t
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::getNumberOfComponents(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::getNumberOfComponents(
         ) const {
     return _rootIdxToComponent.size();
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 const RootDataT&
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::getRootData(
-        const KeyT& key) {
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::getRootData(const KeyT& key) {
     return _getRootDataByIndex(_keyToIndex[key]);
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 std::size_t
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getRootIdxByIndex(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getRootIdxByIndex(
         std::size_t idx) const {
     if(std::size_t parentIdx = _parents[idx]; parentIdx != idx) {
         // Rejoin
@@ -378,36 +369,38 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getRootIdxByIndex(
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 RootDataT&
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getRootDataByIndex(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getRootDataByIndex(
         std::size_t idx) {
     std::size_t rootIndex = _getRootIdxByIndex(idx);
-    return std::get<RootDataT>(_data[rootIndex]);
+    return _data[rootIndex];
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-void gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_postConstruct() {
+template<class KeyT, class RootDataT, class Comp>
+void gdsu::DSUWithData<KeyT, RootDataT, Comp>::_postConstruct() {
     _parents.resize(_data.size());
     for (std::size_t i = 0; i < _parents.size(); ++i) {
         _parents[i] = i;
     }
     for (std::size_t i = 0; i < _data.size(); ++i) {
         _rootIdxToComponent.emplace(std::make_pair(i, Component(i, 1)));
-        _keyToIndex[std::get<RootDataT>(_data[i]).getKey()] = i;
+        _keyToIndex[_data[i].getKey()] = i;
     }
 }
 
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class Comp>
 std::size_t
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::getComponentSize(const KeyT& key) const {
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::getComponentSize(const KeyT& key) const {
     return _getComponent(key).getSize();
 }
 
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class Comp>
 auto
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getComponent(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getComponent(
         const KeyT &key) const -> const Component& {
     std::size_t index = _keyToIndex[key];
     std::size_t rootIndex = _getRootIdxByIndex(index);
@@ -417,36 +410,36 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::_getComponent(
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::Component::Component(
+template<class KeyT, class RootDataT, class Comp>
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::Component::Component(
         std::size_t rootIdx, std::size_t size)
         : _rootIndex(rootIdx), _size(size) {}
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::Component::Component(
+template<class KeyT, class RootDataT, class Comp>
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::Component::Component(
         Component &&other) noexcept
         : _rootIndex(other._rootIndex),
           _size(other._size) { }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::Component::Component(
+template<class KeyT, class RootDataT, class Comp>
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::Component::Component(
         const Component& other)
         : _rootIndex(other._rootIndex),
           _size(other._size) { }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::Component::Component()
+template<class KeyT, class RootDataT, class Comp>
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::Component::Component()
         : _rootIndex{}, _size{} {
     assert(false);
 }
 
 //----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+template<class KeyT, class RootDataT, class Comp>
 std::size_t
-gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::Component::getSize(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::Component::getSize(
         ) const {
     return _size;
 }

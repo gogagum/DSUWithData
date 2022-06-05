@@ -8,20 +8,15 @@
 #include "../src/DefaultDSUData.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
-// class FloatAvgSimpleData
-class FloatAvgSimpleData : public gdsu::BaseSimpleDSUData<float> {
-public:
-    FloatAvgSimpleData() : gdsu::BaseSimpleDSUData<float>(float{}) {};
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // class FloatAvgRootData
 class FloatAvgRootData : public gdsu::BaseRootDSUData<float> {
 public:
+    FloatAvgRootData() { assert(false); };
+
     explicit FloatAvgRootData(float key)
         : gdsu::BaseRootDSUData<float>(key), _size(1), _avg(key) {};
 
-    FloatAvgSimpleData joinWith(FloatAvgRootData&& other);
+    void joinWith(FloatAvgRootData&& other);
 
     [[nodiscard]] float getAvg() const;
 
@@ -34,10 +29,9 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
-FloatAvgSimpleData FloatAvgRootData::joinWith(FloatAvgRootData &&other) {
+void FloatAvgRootData::joinWith(FloatAvgRootData &&other) {
     _size += other._size;
     _avg = (this->_avg + other._avg) / static_cast<float>(_size);
-    return {};
 }
 
 //----------------------------------------------------------------------------//
