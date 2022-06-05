@@ -15,7 +15,7 @@ TEST(DefaultData, KeysConstructor) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 3);
 }
 
-TEST(DefaultData, RootDataConstructor) {
+TEST(DefaultData, RootDataVectorConstructor) {
     const auto rootDataVec =
             std::vector<gdsu::BaseRootDSUData<int>>{
                     gdsu::BaseRootDSUData<int>(4),
@@ -26,6 +26,32 @@ TEST(DefaultData, RootDataConstructor) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
     dsu.joinByKeys(4, 5);
     EXPECT_EQ(dsu.getNumberOfComponents(), 1);
+}
+
+TEST(DefaultData, RootDataConstructor) {
+    const auto dsu =
+            gdsu::DSUWithData<int>(std::initializer_list<gdsu::BaseRootDSUData<int>>{
+                gdsu::BaseRootDSUData<int>(1),
+                gdsu::BaseRootDSUData<int>(2),
+                gdsu::BaseRootDSUData<int>(3)
+            });
+
+    EXPECT_EQ(dsu.getNumberOfComponents(), 3);
+}
+
+TEST(DefaultData, RootDataILConstructorRepeatingKeys) {
+    const auto action = []{
+        const auto dsu =
+                gdsu::DSUWithData<int>(
+                    std::initializer_list<gdsu::BaseRootDSUData<int>>{
+                        gdsu::BaseRootDSUData<int>(1),
+                        gdsu::BaseRootDSUData<int>(2),
+                        gdsu::BaseRootDSUData<int>(1)
+                    }
+                );
+    };
+
+    EXPECT_THROW(action(), std::invalid_argument);
 }
 
 TEST(DefaultData, ConstructFromVectorIterators) {
@@ -43,6 +69,20 @@ TEST(DefaultData, ConstructFromVectorIteratorsRepeatingKeys) {
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
     EXPECT_EQ(dsu.getComponent(2).getSize(), 1);
+}
+
+TEST(DefaultData, RootDataConstructorRepeatingKeys) {
+    const auto action = []{
+        auto rootData = std::vector{
+                gdsu::BaseRootDSUData<int>(1),
+                gdsu::BaseRootDSUData<int>(2),
+                gdsu::BaseRootDSUData<int>(1)
+        };
+        const auto dsu =
+                gdsu::DSUWithData<int>(rootData.begin(), rootData.end());
+    };
+
+    EXPECT_THROW(action(), std::invalid_argument);
 }
 
 TEST(DefaultData, ConstructFromListIterators) {

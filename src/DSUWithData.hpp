@@ -33,6 +33,12 @@ namespace gdsu {
             }
         };
 
+        struct KeyPtrComp {
+            bool operator()(const KeyT* const key1, const KeyT* const key2) const {
+                return Comp()(*key1, *key2);
+            }
+        };
+
     public:
 
         ////////////////////////////////////////////////////////////////////////
@@ -126,10 +132,16 @@ namespace gdsu {
         // Join two components by keys
         void joinByKeys(const KeyT& key1, const KeyT& key);
 
-        // Check if two keys are in the same component
+        // Check if two keys are of the same component
         // @param key1 - firstKey
         // @param key2 - secondKey
         bool inSameComponent(const KeyT& key1, const KeyT& key2) const;
+
+        // Check if two root data objects wrap keys from the same component
+        // @param rootData1 - first root data object
+        // @param rootData2 - second root data object
+        bool inSameComponent(const RootDataT& rootData1,
+                             const RootDataT& rootData2) const;
 
         // Get component.
         // @param key - search key.
@@ -170,11 +182,11 @@ namespace gdsu {
 template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
         std::initializer_list<KeyT> keys) {
-    auto addedKeys = std::set<KeyT, Comp>();
+    auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
     for (const auto& key : keys) {
-        if (!addedKeys.contains(key)) {
+        if (!addedKeys.contains(&key)) {
             _data.push_back(RootDataT(key));
-            addedKeys.insert(key);
+            addedKeys.insert(&key);
         }
     }
     _postConstruct();
@@ -184,12 +196,14 @@ gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
 template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
         std::initializer_list<RootDataT> rootData) {
-    auto addedKeys = std::set<KeyT, Comp>();
+    auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
     for (const auto& rootDataI : rootData) {
         if (const auto& newKey = rootDataI.getKey();
-            !addedKeys.contains(newKey)) {
+        addedKeys.contains(&newKey)) {
+            throw std::invalid_argument("Root data keys must not repeat.");
+        } else {
             _data.push_back(rootDataI);
-            addedKeys.insert(newKey);
+            addedKeys.insert(&newKey);
         }
     }
     _postConstruct();
@@ -204,11 +218,12 @@ requires std::is_same_v<
          >
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
         IteratorT begin, IteratorT end) {
-    std::set<KeyT, Comp> addedKeys;
+    auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
     for (auto keyIt = begin; keyIt != end; ++keyIt) {
-        if (!addedKeys.contains(*keyIt)) {
-            _data.push_back(RootDataT(*keyIt));
-            addedKeys.insert(*keyIt);
+        if (const KeyT& keyRef = *keyIt;
+        !addedKeys.contains(&keyRef)) {
+            _data.push_back(RootDataT(keyRef));
+            addedKeys.insert(&keyRef);
         }
     }
     _postConstruct();
@@ -224,8 +239,14 @@ requires std::is_same_v<
 gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::DSUWithData(
         IteratorT begin, IteratorT end)
         : _parents(end - begin) {
+    auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
     for (auto rootDataIt = begin; rootDataIt != end; ++rootDataIt) {
+        const KeyT& keyRef = rootDataIt->getKey();
+        if (addedKeys.contains(&keyRef)) {
+            throw std::invalid_argument("Root data keys must not repeat.");
+        }
         _data.push_back(*rootDataIt);
+        addedKeys.insert(&keyRef);
     }
     _postConstruct();
 }
@@ -292,6 +313,18 @@ bool gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::inSameComponent(
         const KeyT& key1, const KeyT& key2) const {
     const std::size_t root1Idx = _getRootIdxByIndex(_keyToIndex[key1]);
     const std::size_t root2Idx = _getRootIdxByIndex(_keyToIndex[key2]);
+
+    return root1Idx == root2Idx;
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class SimpleDataT, class Comp>
+bool gdsu::DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>::inSameComponent(
+        const RootDataT& rootData1, const RootDataT& rootData2) const {
+    const std::size_t root1Idx =
+            _getRootIdxByIndex(_keyToIndex[rootData1.getKey()]);
+    const std::size_t root2Idx =
+            _getRootIdxByIndex(_keyToIndex[rootData2.getKey()]);
 
     return root1Idx == root2Idx;
 }
