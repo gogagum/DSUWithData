@@ -364,6 +364,7 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getRootDataByIndex(
     return _getRootData(rootIndex);
 }
 
+
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class Comp>
 auto
