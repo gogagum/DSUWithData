@@ -18,10 +18,10 @@
 namespace gdsu {
 
     /**
-     * \brief class DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>
-     * \tparam KeyT
-     * \tparam RootDataT
-     * \tparam Comp
+     * @brief class DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>
+     * @tparam KeyT
+     * @tparam RootDataT
+     * @tparam Comp
      */
     template<class KeyT,
              class RootDataT = BaseRootDSUData<KeyT>,
@@ -30,7 +30,8 @@ namespace gdsu {
     private:
 
         struct KeyPtrComp {
-            bool operator()(const KeyT* const key1, const KeyT* const key2) const {
+            bool operator()(const KeyT* const key1,
+                            const KeyT* const key2) const {
                 return Comp()(*key1, *key2);
             }
         };
@@ -39,7 +40,7 @@ namespace gdsu {
 
         /**
          * DSU constructor from keys.
-         * @param keys keys list
+         * @param keys - keys list.
          */
         DSUWithData(std::initializer_list<KeyT> keys);
 
@@ -50,10 +51,11 @@ namespace gdsu {
         DSUWithData(std::initializer_list<RootDataT> rootData);
 
         /**
-         * DSU constructor from container with keys objects by pair of iterators
+         * DSU constructor from container with keys objects by pair of
+         * iterators.
          * @tparam IteratorT - iterator type.
-         * @param begin - range beginning
-         * @param end - range ending (position after last element)
+         * @param begin - range beginning.
+         * @param end - range ending (position after last element).
          */
         template<class IteratorT>
         requires std::is_same_v<
@@ -66,8 +68,8 @@ namespace gdsu {
          * DSU constructor from container with root data objects from pair of
          * iterators.
          * @tparam IteratorT - iterator type.
-         * @param begin - range beginning
-         * @param end - range ending (position after last element)
+         * @param begin - range beginning.
+         * @param end - range ending (position after last element).
          */
         template<class IteratorT>
         requires std::is_same_v<
@@ -76,63 +78,97 @@ namespace gdsu {
                  >
         DSUWithData(IteratorT begin, IteratorT end);
 
-        // DSU constructor from keys set by pair of iterators
-        // @param begin - range beginning
-        // @param end - range ending (position after last element)
+        /**
+         * DSU constructor from keys set by pair of iterators.
+         * @param begin - range beginning.
+         * @param end - range ending (position after last element).
+         */
         DSUWithData(typename std::set<KeyT, Comp>::iterator begin,
                     typename std::set<KeyT, Comp>::iterator end);
 
         /**
-         * Join two components by keys
-         * @param key1
-         * @param key2
+         * Join two components by keys.
+         * @param key1 - first key.
+         * @param key2 - second key.
          */
         void joinByKeys(const KeyT& key1, const KeyT& key2);
 
-        // Check if two keys are of the same component
-        // @param key1 - first key
-        // @param key2 - second key
+        /**
+         * Check if two keys are of the same component.
+         * @param key1 - first key.
+         * @param key2 - second key.
+         * @return `true if key1 and key2 are of the same component.
+         */
         bool inSameComponent(const KeyT& key1, const KeyT& key2) const;
 
-        // Check if two root data objects wrap keys from the same component
-        // @param rootData1 - first root data object
-        // @param rootData2 - second root data object
-        bool inSameComponent(const RootDataT& rootData1,
-                             const RootDataT& rootData2) const;
-
-        // Get component size
-        // @param key - key
+        /**
+         * Get component size.
+         * @param key - key.
+         * @return number of elements in the same component as key.
+         */
         std::size_t getComponentSize(const KeyT& key) const;
 
-        // Get number of components.
-        // @return number of components.
+        /**
+         * Get number of components in the DSU.
+         * @return number of components.
+         */
         [[nodiscard]] std::size_t getNumberOfComponents() const;
 
-        // Root data by key.
-        // @param key to search.
+        /**
+         * Root data by key.
+         * @param key - key to search.
+         * @return rootDataOfTheComponent.
+         */
         const RootDataT& getRootData(const KeyT& key);
 
     private:
 
-        // Fill parents relations data
+        /**
+         * Fill parents relations data.
+         */
         void _postConstruct();
 
-        // Root index by element index
+        /**
+         * Root index by element index.
+         * @param idx - index if element.
+         * @return index of the root element of the component.
+         */
         std::size_t _getRootIdxByIndex(std::size_t idx) const;
 
+        /**
+         * Root data by component element index.
+         * @param idx - component element index.
+         * @return root data.
+         */
         RootDataT& _getRootDataByIndex(std::size_t idx);
 
+        /**
+         * Root data by component element index.
+         * @param idx - component element index.
+         * @return root data.
+         */
         const RootDataT& _getRootDataByIndex(std::size_t idx) const;
 
-        // Join two components
-        // @param comp1 - first component
-        // @param comp2 - second component
-        // @return - component of a join result.
+        /**
+         * Join two components.
+         * @param comp1 - first component.
+         * @param comp2 - second component.
+         */
         void _join(std::size_t comp1, std::size_t comp2);
 
-        RootDataT& _getData(std::size_t rootIdx);
+        /**
+         * Root data by root index.
+         * @param rootIdx - root index.
+         * @return root data.
+         */
+        RootDataT& _getRootData(std::size_t rootIdx);
 
-        const RootDataT& _getData(std::size_t rootIdx) const;
+        /**
+         * Root data by root index.
+         * @param rootIdx - root index.
+         * @return root data.
+         */
+        const RootDataT& _getRootData(std::size_t rootIdx) const;
 
     private:
         // Parents relations info
@@ -246,8 +282,8 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::_join(
     RootDataT* smallerDataPtr;
     RootDataT* biggerDataPtr;
 
-    if (auto& firstData = _getData(rootIdx1),
-              secondData = _getData(rootIdx2);
+    if (auto& firstData = _getRootData(rootIdx1),
+              secondData = _getRootData(rootIdx2);
             firstData.getSize() < secondData.getSize()) {
         smallerComponentRootIdx = rootIdx1;
         biggerComponentRootIdx = rootIdx2;
@@ -293,18 +329,6 @@ bool gdsu::DSUWithData<KeyT, RootDataT, Comp>::inSameComponent(
 
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class Comp>
-bool gdsu::DSUWithData<KeyT, RootDataT, Comp>::inSameComponent(
-        const RootDataT& rootData1, const RootDataT& rootData2) const {
-    const std::size_t root1Idx =
-            _getRootIdxByIndex(_keyToIndex[rootData1.getKey()]);
-    const std::size_t root2Idx =
-            _getRootIdxByIndex(_keyToIndex[rootData2.getKey()]);
-
-    return root1Idx == root2Idx;
-}
-
-//----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class Comp>
 std::size_t
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::getNumberOfComponents(
         ) const {
@@ -337,7 +361,7 @@ auto
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getRootDataByIndex(
         std::size_t idx) -> RootDataT& {
     std::size_t rootIndex = _getRootIdxByIndex(idx);
-    return _getData(rootIndex);
+    return _getRootData(rootIndex);
 }
 
 //----------------------------------------------------------------------------//
@@ -346,7 +370,7 @@ auto
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getRootDataByIndex(
         std::size_t idx) const -> const RootDataT& {
     std::size_t rootIndex = _getRootIdxByIndex(idx);
-    return _getData(rootIndex);
+    return _getRootData(rootIndex);
 }
 
 
@@ -372,7 +396,8 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::getComponentSize(const KeyT& key) cons
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class Comp>
 auto
-gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getData(std::size_t rootIdx) -> RootDataT& {
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getRootData(
+        std::size_t rootIdx) -> RootDataT& {
     if (auto dataIt = _data.find(rootIdx); dataIt == _data.end()) {
         throw std::runtime_error("No root data in index.");
     } else {
@@ -383,7 +408,7 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getData(std::size_t rootIdx) -> RootD
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class Comp>
 auto
-gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getData(
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getRootData(
         std::size_t rootIdx) const -> const RootDataT& {
     if (auto dataIt = _data.find(rootIdx); dataIt == _data.end()) {
         throw std::runtime_error("No root data in index.");
