@@ -14,7 +14,8 @@ public:
     explicit GreatestElementRootDsuData(const KeyT& key)
             : gdsu::BaseRootDSUData<KeyT>(key), _greatest(key) {};
 
-    void joinWith(GreatestElementRootDsuData<KeyT, Comp>&& other) {
+    void joinWith(const GreatestElementRootDsuData<KeyT, Comp>& other) {
+        gdsu::BaseRootDSUData<KeyT>::joinWith(static_cast<gdsu::BaseRootDSUData<KeyT>>(other));  // TODO
         if (Comp()(_greatest, other._greatest)) {
             _greatest = other._greatest;
         }

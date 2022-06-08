@@ -18,11 +18,14 @@ namespace gdsu {
         explicit BaseRootDSUData(const KeyT& key);
         explicit BaseRootDSUData(KeyT&& key);
 
-        const KeyT& getKey() const { return _key; };
+        const KeyT& getKey() const;;
+        [[nodiscard]] std::size_t getSize() const;
     public:
         // Join with other root.
         // @param other - other data to join.
-        void joinWith(BaseRootDSUData<KeyT>&& other);
+        void joinWith(const BaseRootDSUData<KeyT>& other);
+    protected:
+        std::size_t _size;
     private:
         KeyT _key;
     };
@@ -31,16 +34,30 @@ namespace gdsu {
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT>
-gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(const KeyT& key) : _key(key) {}
+gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(const KeyT& key)
+        : _key(key), _size(1) {}
 
 //----------------------------------------------------------------------------//
 template<class KeyT>
-gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(KeyT&& key) : _key(std::move(key)) {}
+gdsu::BaseRootDSUData<KeyT>::BaseRootDSUData(KeyT&& key)
+        : _key(std::move(key)), _size(1) {}
 
 //----------------------------------------------------------------------------//
 template<class KeyT>
 void
-gdsu::BaseRootDSUData<KeyT>::joinWith(BaseRootDSUData<KeyT> &&other) {}
+gdsu::BaseRootDSUData<KeyT>::joinWith(const BaseRootDSUData<KeyT>& other) {
+    this->_size += other._size;
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT>
+std::size_t gdsu::BaseRootDSUData<KeyT>::getSize() const {
+    return _size;
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT>
+const KeyT &gdsu::BaseRootDSUData<KeyT>::getKey() const { return _key; }
 
 #endif //DSU_WITH_DATA_DEFAULTDSUDATA_HPP
 

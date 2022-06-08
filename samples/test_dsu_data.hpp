@@ -12,22 +12,21 @@
 class FloatAvgRootData : public gdsu::BaseRootDSUData<float> {
 public:
     explicit FloatAvgRootData(float key)
-        : gdsu::BaseRootDSUData<float>(key), _size(1), _avg(key) {};
+        : gdsu::BaseRootDSUData<float>(key), _avg(key) {};
 
-    void joinWith(FloatAvgRootData&& other);
+    void joinWith(const FloatAvgRootData& other);
 
     [[nodiscard]] float getAvg() const;
 
 private:
     float _avg;
-    std::size_t _size;
 };
 
 #endif //SIMPLE_DSU_SAMPLE_TEST_DSU_DATA_HPP
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
-void FloatAvgRootData::joinWith(FloatAvgRootData &&other) {
+void FloatAvgRootData::joinWith(const FloatAvgRootData& other) {
     _size += other._size;
     _avg = (this->_avg + other._avg) / static_cast<float>(_size);
 }
