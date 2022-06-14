@@ -151,10 +151,10 @@ namespace gdsu {
 
         /**
          * Join two components.
-         * @param comp1 - first component.
-         * @param comp2 - second component.
+         * @param comp1Idx - first component index.
+         * @param comp2Idx - second component index.
          */
-        void _join(std::size_t comp1, std::size_t comp2);
+        void _join(std::size_t comp1Idx, std::size_t comp2Idx);
 
         /**
          * Root data by root index.
@@ -174,9 +174,9 @@ namespace gdsu {
         // Parents relations info
         mutable std::vector<std::size_t> _parents;
         // Vector with data objects
-        mutable std::unordered_map<std::size_t, RootDataT> _data;
+        std::unordered_map<std::size_t, RootDataT> _data;
         // Key to index mapping
-        mutable std::map<KeyT, std::size_t, Comp> _keyToIndex;
+        std::map<KeyT, std::size_t, Comp> _keyToIndex;
     };
 }
 
@@ -321,8 +321,15 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::joinByKeys(
 template<class KeyT, class RootDataT, class Comp>
 bool gdsu::DSUWithData<KeyT, RootDataT, Comp>::inSameComponent(
         const KeyT& key1, const KeyT& key2) const {
-    const std::size_t root1Idx = _getRootIdxByIndex(_keyToIndex[key1]);
-    const std::size_t root2Idx = _getRootIdxByIndex(_keyToIndex[key2]);
+    auto it1 = _keyToIndex.find(key1);
+    auto it2 = _keyToIndex.find(key2);
+
+    if (it1 == _keyToIndex.end() || it2 == _keyToIndex.end()) {
+        throw std::invalid_argument("No such key.");
+    }
+
+    const std::size_t root1Idx = _getRootIdxByIndex(it1->second);
+    const std::size_t root2Idx = _getRootIdxByIndex(it2->second);
 
     return root1Idx == root2Idx;
 }
@@ -391,7 +398,11 @@ void gdsu::DSUWithData<KeyT, RootDataT, Comp>::_postConstruct() {
 template<class KeyT, class RootDataT, class Comp>
 std::size_t
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::getComponentSize(const KeyT& key) const {
-    return _getRootDataByIndex(_keyToIndex[key]).getSize();
+    if (auto it = _keyToIndex.find(key); it == _keyToIndex.end()) {
+        throw std::invalid_argument("No such key.");
+    } else {
+        return _getRootDataByIndex(it->second).getSize();
+    }
 }
 
 //----------------------------------------------------------------------------//
