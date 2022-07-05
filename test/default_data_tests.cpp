@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include "../src/DSUWithData.hpp"
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, KeysConstructor) {
     auto dsu =
         gdsu::DSUWithData<int>(std::initializer_list<int>{0, 1, 3});
@@ -15,6 +16,7 @@ TEST(DefaultData, KeysConstructor) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 3);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, RootDataVectorConstructor) {
     const auto rootDataVec =
             std::vector<gdsu::BaseRootDSUData<int>>{
@@ -28,6 +30,7 @@ TEST(DefaultData, RootDataVectorConstructor) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 1);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, RootDataConstructor) {
     const auto dsu =
             gdsu::DSUWithData<int>(std::initializer_list<gdsu::BaseRootDSUData<int>>{
@@ -39,6 +42,7 @@ TEST(DefaultData, RootDataConstructor) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 3);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, RootDataILConstructorRepeatingKeys) {
     const auto action = []{
         const auto dsu =
@@ -54,6 +58,7 @@ TEST(DefaultData, RootDataILConstructorRepeatingKeys) {
     EXPECT_THROW(action(), std::invalid_argument);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, ConstructFromVectorIterators) {
     auto keysVec = std::vector{1, 2, 3};
     auto dsu = gdsu::DSUWithData<int>{keysVec.begin(), keysVec.end()};
@@ -63,6 +68,7 @@ TEST(DefaultData, ConstructFromVectorIterators) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, ConstructFromVectorIteratorsRepeatingKeys) {
     auto keysVec = std::vector{1, 2, 2};
     auto dsu = gdsu::DSUWithData<int>{keysVec.begin(), keysVec.end()};
@@ -71,6 +77,7 @@ TEST(DefaultData, ConstructFromVectorIteratorsRepeatingKeys) {
     EXPECT_EQ(dsu.getComponentSize(2), 1);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, RootDataConstructorRepeatingKeys) {
     const auto action = []{
         auto rootData = std::vector{
@@ -85,6 +92,7 @@ TEST(DefaultData, RootDataConstructorRepeatingKeys) {
     EXPECT_THROW(action(), std::invalid_argument);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, ConstructFromListIterators) {
     auto keysList = std::list{1, 2, 3};
     auto dsu = gdsu::DSUWithData<int>{keysList.begin(), keysList.end()};
@@ -94,6 +102,7 @@ TEST(DefaultData, ConstructFromListIterators) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, ConstructFromListIteratorsRepeatingKeys) {
     auto keysVec = std::list{1, 2, 2};
     auto dsu = gdsu::DSUWithData<int>{keysVec.begin(), keysVec.end()};
@@ -102,6 +111,7 @@ TEST(DefaultData, ConstructFromListIteratorsRepeatingKeys) {
     EXPECT_EQ(dsu.getComponentSize(2), 1);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, ConstructFromSetIterators) {
     auto keysSet = std::set{1, 2, 3, 3};
     auto dsu = gdsu::DSUWithData<int>{keysSet.begin(), keysSet.end()};
@@ -111,6 +121,7 @@ TEST(DefaultData, ConstructFromSetIterators) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, ConstructFromUnorderedSetIterators) {
     auto keysSet = std::unordered_set{1, 2, 3, 3};
     auto dsu = gdsu::DSUWithData<int>{keysSet.begin(), keysSet.end()};
@@ -120,12 +131,10 @@ TEST(DefaultData, ConstructFromUnorderedSetIterators) {
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, JoinByKey) {
     auto dsu = gdsu::DSUWithData<int>({0, 1});
-
-
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
-
     dsu.joinByKeys(0, 1);
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 1);
@@ -134,6 +143,7 @@ TEST(DefaultData, JoinByKey) {
     EXPECT_TRUE(dsu.inSameComponent(0, 1));
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, TestInSameComponent) {
     auto dsu = gdsu::DSUWithData<int>{1, 2, 3, 4, 5};
 
@@ -144,6 +154,7 @@ TEST(DefaultData, TestInSameComponent) {
     ASSERT_TRUE(dsu.inSameComponent(1, 2));
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, JoinFive) {
     auto dsu =
         gdsu::DSUWithData<std::string>({"one", "two", "three", "four", "five"});
@@ -159,6 +170,7 @@ TEST(DefaultData, JoinFive) {
     EXPECT_FALSE(dsu.inSameComponent("one", "five"));
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, SelfJoin) {
     auto dsu = gdsu::DSUWithData<int>{2, 3, 4, 5};
 
@@ -167,12 +179,14 @@ TEST(DefaultData, SelfJoin) {
     EXPECT_EQ(dsu.getComponentSize(2), 1);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, GetComponent) {
     auto dsu = gdsu::DSUWithData<int>{3, 4, 5, 6};
 
     ASSERT_EQ(dsu.getComponentSize(4), 1);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, JoinAllByKeysAndWatchComponent) {
     auto dsu = gdsu::DSUWithData<int>{3, 4, 5, 6};
 
@@ -195,6 +209,7 @@ TEST(DefaultData, JoinAllByKeysAndWatchComponent) {
     ASSERT_EQ(dsu.getComponentSize(5), 4);
 }
 
+//----------------------------------------------------------------------------//
 TEST(DefaultData, GetRootData) {
     auto dsu = gdsu::DSUWithData<int>{2, 3, 4, 5};
 
@@ -202,4 +217,43 @@ TEST(DefaultData, GetRootData) {
     EXPECT_EQ(rootData.getKey(), 3);
 }
 
+//----------------------------------------------------------------------------//
+TEST(DefaultData, NoSuchKeyJoin0) {
+    auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
 
+    EXPECT_THROW(dsu.joinByKeys(3, 5), std::invalid_argument);
+}
+
+//----------------------------------------------------------------------------//
+TEST(DefaultData, NoSuchKeyJoin1) {
+    auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
+
+    EXPECT_THROW(dsu.joinByKeys(4, 5), std::invalid_argument);
+}
+
+//----------------------------------------------------------------------------//
+TEST(DefaultData, NoSuchKeyRootData) {
+    auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
+    dsu.joinByKeys(2, 3);
+
+    EXPECT_THROW(dsu.getRootData(5), std::invalid_argument);
+}
+
+//----------------------------------------------------------------------------//
+TEST(DefaultData, NoSuchKeySameComponentCheck) {
+    auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
+    EXPECT_THROW(dsu.inSameComponent(3, 5), std::invalid_argument);
+}
+
+//----------------------------------------------------------------------------//
+TEST(DefaultData, NoSuchKeySameComponentCheck2) {
+    auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
+    EXPECT_THROW(dsu.inSameComponent(4, 5), std::invalid_argument);
+}
+
+//----------------------------------------------------------------------------//
+TEST(DefaultData, NoSuchKeyComponentSize) {
+    auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
+    dsu.joinByKeys(2, 3);
+    EXPECT_THROW(dsu.getComponentSize(42), std::invalid_argument);
+}

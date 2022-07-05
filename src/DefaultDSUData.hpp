@@ -18,7 +18,7 @@ namespace gdsu {
         explicit BaseRootDSUData(const KeyT& key);
         explicit BaseRootDSUData(KeyT&& key);
 
-        const KeyT& getKey() const;;
+        const KeyT& getKey() const;
         [[nodiscard]] std::size_t getSize() const;
     public:
         // Join with other root.

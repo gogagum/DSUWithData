@@ -129,6 +129,13 @@ namespace gdsu {
         void _postConstruct();
 
         /**
+         * Get implementation index by key.
+         * @param key - key to get index.
+         * @return index
+         */
+        std::size_t _getIdxByKey(const KeyT& key) const;
+
+        /**
          * Root index by element index.
          * @param idx - index if element.
          * @return index of the root element of the component.
@@ -307,8 +314,8 @@ void
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::joinByKeys(
         const KeyT &key1,
         const KeyT &key2) {
-    const std::size_t rootIdx1 = _getRootIdxByIndex(_keyToIndex[key1]);
-    const std::size_t rootIdx2 = _getRootIdxByIndex(_keyToIndex[key2]);
+    const std::size_t rootIdx1 = _getRootIdxByIndex(_getIdxByKey(key1));
+    const std::size_t rootIdx2 = _getRootIdxByIndex(_getIdxByKey(key2));
 
     if (rootIdx1 == rootIdx2) {
         return;
@@ -321,15 +328,8 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::joinByKeys(
 template<class KeyT, class RootDataT, class Comp>
 bool gdsu::DSUWithData<KeyT, RootDataT, Comp>::inSameComponent(
         const KeyT& key1, const KeyT& key2) const {
-    auto it1 = _keyToIndex.find(key1);
-    auto it2 = _keyToIndex.find(key2);
-
-    if (it1 == _keyToIndex.end() || it2 == _keyToIndex.end()) {
-        throw std::invalid_argument("No such key.");
-    }
-
-    const std::size_t root1Idx = _getRootIdxByIndex(it1->second);
-    const std::size_t root2Idx = _getRootIdxByIndex(it2->second);
+    const std::size_t root1Idx = _getRootIdxByIndex(_getIdxByKey(key1));
+    const std::size_t root2Idx = _getRootIdxByIndex(_getIdxByKey(key2));
 
     return root1Idx == root2Idx;
 }
@@ -346,7 +346,7 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::getNumberOfComponents(
 template<class KeyT, class RootDataT, class Comp>
 const RootDataT&
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::getRootData(const KeyT& key) {
-    return _getRootDataByIndex(_keyToIndex[key]);
+    return _getRootDataByIndex(_getIdxByKey(key));
 }
 
 //----------------------------------------------------------------------------//
@@ -377,7 +377,7 @@ template<class KeyT, class RootDataT, class Comp>
 auto
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getRootDataByIndex(
         std::size_t idx) const -> const RootDataT& {
-    std::size_t rootIndex = _getRootIdxByIndex(idx);
+    const std::size_t rootIndex = _getRootIdxByIndex(idx);
     return _getRootData(rootIndex);
 }
 
@@ -396,13 +396,20 @@ void gdsu::DSUWithData<KeyT, RootDataT, Comp>::_postConstruct() {
 
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class Comp>
-std::size_t
-gdsu::DSUWithData<KeyT, RootDataT, Comp>::getComponentSize(const KeyT& key) const {
+size_t gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getIdxByKey(
+        const KeyT &key) const {
     if (auto it = _keyToIndex.find(key); it == _keyToIndex.end()) {
         throw std::invalid_argument("No such key.");
     } else {
-        return _getRootDataByIndex(it->second).getSize();
+        return it->second;
     }
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class Comp>
+std::size_t
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::getComponentSize(const KeyT& key) const {
+    return _getRootDataByIndex(_getIdxByKey(key)).getSize();
 }
 
 //----------------------------------------------------------------------------//
