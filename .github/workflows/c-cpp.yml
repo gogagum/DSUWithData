@@ -45,7 +45,9 @@ jobs:
 
       - name: Build
         shell: bash
-        run: cmake --build . --config Debug
+        run: |
+          cd build
+          cmake --build . --config Debug
 
       - name: Test
         shell: bash
