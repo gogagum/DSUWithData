@@ -60,5 +60,3 @@ template<class KeyT>
 const KeyT &gdsu::BaseRootDSUData<KeyT>::getKey() const { return _key; }
 
 #endif //DSU_WITH_DATA_DEFAULTDSUDATA_HPP
-
-

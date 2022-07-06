@@ -3,9 +3,10 @@
 //
 
 #include <gtest/gtest.h>
-#include "../src/DSUWithData.hpp"
+#include <DSUWithData.hpp>
 #include "samples/test_dsu_data.hpp"
 #include "samples/greatest_element_dsu_data.hpp"
+
 
 //----------------------------------------------------------------------------//
 TEST(CustomData, FloatAvgData) {

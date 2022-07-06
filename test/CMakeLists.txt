@@ -1,0 +1,9 @@
+enable_testing()
+add_executable(
+        dsu_test
+        default_data_tests.cpp
+        custom_data_tests.cpp
+)
+target_link_libraries(dsu_test LINK_PUBLIC gtest_main DSUWithData)
+include(GoogleTest DSUWithData)
+gtest_discover_tests(dsu_test)

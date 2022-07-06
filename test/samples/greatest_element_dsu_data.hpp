@@ -6,7 +6,7 @@
 #define DSU_TEST_GREATEST_ELEMENT_DSU_DATA_HPP
 
 #include <functional>
-#include "../../src/DefaultDSUData.hpp"
+#include <DefaultDSUData.hpp>
 
 template<class KeyT, class Comp = std::less<KeyT>>
 class GreatestElementRootDsuData : public gdsu::BaseRootDSUData<KeyT> {

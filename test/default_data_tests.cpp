@@ -6,7 +6,7 @@
 #include <list>
 
 #include <gtest/gtest.h>
-#include "../src/DSUWithData.hpp"
+#include <DSUWithData.hpp>
 
 //----------------------------------------------------------------------------//
 TEST(DefaultData, KeysConstructor) {

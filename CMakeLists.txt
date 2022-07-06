@@ -13,17 +13,5 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(googletest)
 
-enable_testing()
-
-add_executable(
-        dsu_test
-        test/default_data_tests.cpp
-        test/custom_data_tests.cpp
-)
-target_link_libraries(
-        dsu_test
-        gtest_main
-)
-
-include(GoogleTest)
-gtest_discover_tests(dsu_test)
+add_subdirectory(lib)
+add_subdirectory(test)
