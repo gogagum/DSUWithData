@@ -52,5 +52,5 @@ jobs:
       - name: Test
         shell: bash
         run: | 
-          cd build
+          cd build/test
           ctest
