@@ -37,15 +37,20 @@ jobs:
         shell: bash
         run: |
           mkdir build
+          cd build
           CXX="g++-11" cmake \
-            -S . \
+            -S ../ \
             -B . \
             -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build
         shell: bash
-        run: cmake --build . --config Debug
+        run:
+          cd build \
+          cmake --build . --config Debug
 
       - name: Test
         shell: bash
-        run: ctest
+        run: | 
+          cd build \
+          ctest
