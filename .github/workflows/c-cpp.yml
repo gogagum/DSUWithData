@@ -48,4 +48,6 @@ jobs:
 
       - name: Test
         shell: bash
-        run: ctest
+        run: | 
+          cd build/test
+          ctest
