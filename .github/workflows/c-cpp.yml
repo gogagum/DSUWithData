@@ -36,8 +36,8 @@ jobs:
       - name: Configure
         shell: bash
         run: |
-          mkdir build \
-          cd build \
+          mkdir build
+          cd build
           CXX="g++-11" cmake \
             -S ../ \
             -B . \
@@ -46,11 +46,11 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          cd build \
+          cd build
           cmake --build . --config Debug
 
       - name: Test
         shell: bash
         run: | 
-          cd build \
+          cd build
           ctest
