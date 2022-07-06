@@ -5,7 +5,7 @@
 #ifndef SIMPLE_DSU_SAMPLE_TEST_DSU_DATA_HPP
 #define SIMPLE_DSU_SAMPLE_TEST_DSU_DATA_HPP
 
-#include "../src/DefaultDSUData.hpp"
+#include "../../src/DefaultDSUData.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 // class FloatAvgRootData

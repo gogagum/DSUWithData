@@ -4,15 +4,15 @@
 
 #include <gtest/gtest.h>
 #include "../src/DSUWithData.hpp"
-#include "../samples/test_dsu_data.hpp"
-#include "../samples/greatest_element_dsu_data.hpp"
+#include "samples/test_dsu_data.hpp"
+#include "samples/greatest_element_dsu_data.hpp"
 
 //----------------------------------------------------------------------------//
 TEST(CustomData, FloatAvgData) {
     auto dsu = gdsu::DSUWithData<float, FloatAvgRootData>(
             std::initializer_list<float>{2, 3, 5});
 
-    dsu.joinByKeys(2, 3);
+    dsu.join(2, 3);
 
     EXPECT_FLOAT_EQ(dsu.getRootData(2).getAvg(), 2.5);
 }
@@ -23,8 +23,8 @@ TEST(CustomData, GreatestData) {
             gdsu::DSUWithData<int, GreatestElementRootDsuData<int>>(
                     std::initializer_list<int>{1, 3, 6, 3, 5});
 
-    dsu.joinByKeys(6, 3);
-    dsu.joinByKeys(6, 1);
+    dsu.join(6, 1);
+    dsu.join(6, 3);
 
     ASSERT_EQ(dsu.getRootData(3).getGreatest(), 6);
 }
@@ -40,7 +40,7 @@ TEST(CustomData, GreatestString) {
 
     EXPECT_EQ(dsu.getRootData("ebgdae").getGreatest(), "ebgdae");
 
-    dsu.joinByKeys("caba", "crmn");
+    dsu.join("caba", "crmn");
 
     EXPECT_EQ(dsu.getRootData("caba").getGreatest(), "crmn");
     EXPECT_EQ(dsu.getComponentSize("caba"), 2);
@@ -56,7 +56,7 @@ TEST(CustomData, SmallestString) {
 
     EXPECT_EQ(dsu.getRootData("ebgdae").getGreatest(), "ebgdae");
 
-    dsu.joinByKeys("caba", "crmn");
+    dsu.join("caba", "crmn");
 
     EXPECT_EQ(dsu.getRootData("crmn").getGreatest(), "caba");
     EXPECT_EQ(dsu.getComponentSize("caba"), 2);

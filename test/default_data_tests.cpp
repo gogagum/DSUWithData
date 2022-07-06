@@ -26,7 +26,7 @@ TEST(DefaultData, RootDataVectorConstructor) {
 
     auto dsu = gdsu::DSUWithData<int>(rootDataVec.begin(), rootDataVec.end());
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
-    dsu.joinByKeys(4, 5);
+    dsu.join(4, 5);
     EXPECT_EQ(dsu.getNumberOfComponents(), 1);
 }
 
@@ -64,7 +64,7 @@ TEST(DefaultData, ConstructFromVectorIterators) {
     auto dsu = gdsu::DSUWithData<int>{keysVec.begin(), keysVec.end()};
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 3);
-    dsu.joinByKeys(2, 3);
+    dsu.join(2, 3);
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
 }
 
@@ -98,7 +98,7 @@ TEST(DefaultData, ConstructFromListIterators) {
     auto dsu = gdsu::DSUWithData<int>{keysList.begin(), keysList.end()};
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 3);
-    dsu.joinByKeys(2, 3);
+    dsu.join(2, 3);
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
 }
 
@@ -117,7 +117,7 @@ TEST(DefaultData, ConstructFromSetIterators) {
     auto dsu = gdsu::DSUWithData<int>{keysSet.begin(), keysSet.end()};
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 3);
-    dsu.joinByKeys(2, 3);
+    dsu.join(2, 3);
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
 }
 
@@ -127,7 +127,7 @@ TEST(DefaultData, ConstructFromUnorderedSetIterators) {
     auto dsu = gdsu::DSUWithData<int>{keysSet.begin(), keysSet.end()};
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 3);
-    dsu.joinByKeys(2, 3);
+    dsu.join(2, 3);
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
 }
 
@@ -135,7 +135,7 @@ TEST(DefaultData, ConstructFromUnorderedSetIterators) {
 TEST(DefaultData, JoinByKey) {
     auto dsu = gdsu::DSUWithData<int>({0, 1});
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
-    dsu.joinByKeys(0, 1);
+    dsu.join(0, 1);
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 1);
     EXPECT_EQ(dsu.getComponentSize(0), 2);
@@ -149,7 +149,7 @@ TEST(DefaultData, TestInSameComponent) {
 
     ASSERT_FALSE(dsu.inSameComponent(1, 2));
 
-    dsu.joinByKeys(1, 2);
+    dsu.join(1, 2);
 
     ASSERT_TRUE(dsu.inSameComponent(1, 2));
 }
@@ -159,10 +159,10 @@ TEST(DefaultData, JoinFive) {
     auto dsu =
         gdsu::DSUWithData<std::string>({"one", "two", "three", "four", "five"});
 
-    dsu.joinByKeys("one", "two");
-    dsu.joinByKeys("two", "three");
+    dsu.join("one", "two");
+    dsu.join("two", "three");
 
-    dsu.joinByKeys("four", "five");
+    dsu.join("four", "five");
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
     EXPECT_TRUE(dsu.inSameComponent("one", "three"));
@@ -174,7 +174,7 @@ TEST(DefaultData, JoinFive) {
 TEST(DefaultData, SelfJoin) {
     auto dsu = gdsu::DSUWithData<int>{2, 3, 4, 5};
 
-    dsu.joinByKeys(2, 2);
+    dsu.join(2, 2);
 
     EXPECT_EQ(dsu.getComponentSize(2), 1);
 }
@@ -190,8 +190,8 @@ TEST(DefaultData, GetComponent) {
 TEST(DefaultData, JoinAllByKeysAndWatchComponent) {
     auto dsu = gdsu::DSUWithData<int>{3, 4, 5, 6};
 
-    dsu.joinByKeys(3, 4);
-    dsu.joinByKeys(5, 6);
+    dsu.join(3, 4);
+    dsu.join(5, 6);
 
     ASSERT_EQ(dsu.getComponentSize(4), 2);
     ASSERT_EQ(dsu.getComponentSize(3), 2);
@@ -203,7 +203,7 @@ TEST(DefaultData, JoinAllByKeysAndWatchComponent) {
 
     ASSERT_FALSE(dsu.inSameComponent(3, 6));
 
-    dsu.joinByKeys(3, 6);
+    dsu.join(3, 6);
 
     ASSERT_EQ(dsu.getNumberOfComponents(), 1);
     ASSERT_EQ(dsu.getComponentSize(5), 4);
@@ -221,20 +221,20 @@ TEST(DefaultData, GetRootData) {
 TEST(DefaultData, NoSuchKeyJoin0) {
     auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
 
-    EXPECT_THROW(dsu.joinByKeys(3, 5), std::invalid_argument);
+    EXPECT_THROW(dsu.join(3, 5), std::invalid_argument);
 }
 
 //----------------------------------------------------------------------------//
 TEST(DefaultData, NoSuchKeyJoin1) {
     auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
 
-    EXPECT_THROW(dsu.joinByKeys(4, 5), std::invalid_argument);
+    EXPECT_THROW(dsu.join(4, 5), std::invalid_argument);
 }
 
 //----------------------------------------------------------------------------//
 TEST(DefaultData, NoSuchKeyRootData) {
     auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
-    dsu.joinByKeys(2, 3);
+    dsu.join(2, 3);
 
     EXPECT_THROW(dsu.getRootData(5), std::invalid_argument);
 }
@@ -254,6 +254,6 @@ TEST(DefaultData, NoSuchKeySameComponentCheck2) {
 //----------------------------------------------------------------------------//
 TEST(DefaultData, NoSuchKeyComponentSize) {
     auto dsu = gdsu::DSUWithData<int>{1, 2, 3};
-    dsu.joinByKeys(2, 3);
+    dsu.join(2, 3);
     EXPECT_THROW(dsu.getComponentSize(42), std::invalid_argument);
 }
