@@ -15,11 +15,34 @@ jobs:
     # The type of runner that the job will run on
     name: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: "Ubuntu_Latest_GCC",
+            os: ubuntu-latest,
+            artifact: "ubuntu_gcc.7z",
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            archiver: "7z a",
+            generators: "Ninja"
+          }
+          - {
+            name: "Ubuntu_Latest_Clang",
+            os: ubuntu-latest,
+            artifact: "ubuntu_clang.7z",
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "clang++",
+            archiver: "7z a",
+            generators: "Ninja"
+          }
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
       - name: Print env
         run: |
           echo github.event.action: ${{ github.event.action }}
@@ -32,22 +55,37 @@ jobs:
           sudo apt-get install g++-11
           cmake --version
           gcc --version
-
+      - name: Install dependencies on ubuntu gcc
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest_GCC')
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build cmake g++-11
+          ninja --version
+          cmake --version
+          gcc --version
+      - name: Install dependencies on ubuntu clang
+        if: startsWith(matrix.config.name, 'Ubuntu_Latest_Clang')
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build cmake clang++-12
+          ninja --version
+          cmake --version
+          clang --version
       - name: Configure
         shell: bash
         run: |
           mkdir build
           cd build
-          CXX="g++-11" cmake \
+          CXX="${{ matrix.config.cxx }}" cmake \
             -S ../ \
             -B . \
-            -DCMAKE_BUILD_TYPE=Debug
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
 
       - name: Build
         shell: bash
         run: |
           cd build
-          cmake --build . --config Debug
+          cmake --build . --config ${{ matrix.config.build_type }}
 
       - name: Test
         shell: bash
