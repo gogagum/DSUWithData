@@ -24,8 +24,7 @@ jobs:
             os: ubuntu-latest,
             artifact: "ubuntu_gcc.7z",
             build_type: "Release",
-            cc: "gcc",
-            cxx: "g++",
+            cxx: "g++-11",
             archiver: "7z a",
             generators: "Ninja"
           }
@@ -34,8 +33,7 @@ jobs:
             os: ubuntu-latest,
             artifact: "ubuntu_clang.7z",
             build_type: "Release",
-            cc: "gcc",
-            cxx: "clang++",
+            cxx: "clang++-12",
             archiver: "7z a",
             generators: "Ninja"
           }
@@ -48,13 +46,6 @@ jobs:
           echo github.event.action: ${{ github.event.action }}
           echo github.event_name: ${{ github.event_name }}
 
-      - name: Install dependencies on ubuntu
-        run: |
-          sudo apt-get update
-          sudo apt-get install cmake
-          sudo apt-get install g++-11
-          cmake --version
-          gcc --version
       - name: Install dependencies on ubuntu gcc
         if: startsWith(matrix.config.name, 'Ubuntu_Latest_GCC')
         run: |
