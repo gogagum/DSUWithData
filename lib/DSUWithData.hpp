@@ -9,6 +9,7 @@
 #include <vector>
 #include <variant>
 #include <map>
+#include <set>
 #include <unordered_set>
 #include <stdexcept>
 #include <cassert>
@@ -86,6 +87,14 @@ namespace gdsu {
          */
         DSUWithData(typename std::set<KeyT, Comp>::iterator begin,
                     typename std::set<KeyT, Comp>::iterator end);
+
+        /**
+         * DSU constructor from keys unordered_set by pair of iterators.
+         * @param begin - range beginning.
+         * @param end - range ending (position after last element).
+         */
+        DSUWithData(typename std::unordered_set<KeyT, Comp>::iterator begin,
+                    typename std::unordered_set<KeyT, Comp>::iterator end);
 
         /**
          * Join two components by keys.
@@ -271,6 +280,19 @@ template<class KeyT, class RootDataT, class Comp>
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
         typename std::set<KeyT, Comp>::iterator begin,
         typename std::set<KeyT, Comp>::iterator end) : _data() {
+    for (auto [keyIt, i] = std::make_pair(begin, 0ull);
+         keyIt != end;
+         ++keyIt, ++i) {
+        _data.emplace(std::make_pair(i, RootDataT(*keyIt)));
+    }
+    _postConstruct();
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class Comp>
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
+        typename std::unordered_set<KeyT, Comp>::iterator begin,
+        typename std::unordered_set<KeyT, Comp>::iterator end) : _data() {
     for (auto [keyIt, i] = std::make_pair(begin, 0ull);
          keyIt != end;
          ++keyIt, ++i) {
