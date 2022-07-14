@@ -71,6 +71,7 @@ jobs:
           mkdir build
           cd build
           CXX="${{ matrix.config.cxx }}" cmake \
+            -DBUILD_TESTING=ON \
             -S ../ \
             -B . \
             -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
