@@ -29,4 +29,4 @@ After that you should write the following in your CMakeLists.txt:
     add_subdirectory(path/to/submodule/DSUWithData/lib)
     ...
     target_link_libraries(project_name DSUWithData)
-
+    
