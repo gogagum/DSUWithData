@@ -22,7 +22,7 @@ You can build library and tests using the following commands:
     cmake -S ../ -B .
     cmake --build . --config Debug
 
-To include library into your project you can add as submodule.
+To include library into your project you can add it as submodule.
 After that you should write the following in your CMakeLists.txt:
 
     ...
