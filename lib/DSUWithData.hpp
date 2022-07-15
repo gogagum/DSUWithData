@@ -9,6 +9,7 @@
 #include <vector>
 #include <variant>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <unordered_set>
 #include <stdexcept>
