@@ -15,14 +15,11 @@
 #include <stdexcept>
 #include <cassert>
 #include <numeric>
-#include <ranges>
+#include <boost/range/adaptor/transformed.hpp>
 
 #include "DefaultDSUData.hpp"
 
 namespace gdsu {
-
-    namespace rng = std::ranges;
-
     /**
      * @brief class DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>
      * @tparam KeyT
@@ -214,7 +211,7 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
         }
     } else {
         auto addedKeysRng = keys
-                | rng::views::transform([](auto& key) { return &key; });
+                | boost::adaptors::transformed([](auto& key) { return &key; });
         auto addedKeys = std::vector(addedKeysRng.begin(), addedKeysRng.end());
         std::sort(addedKeys.begin(), addedKeys.end(), KeyPtrComp());
         auto uniqueEnd = std::unique(addedKeys.begin(), addedKeys.end(), KeyPtrEq());
@@ -269,8 +266,8 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
             _data.emplace(std::make_pair(currIdx, RootDataT(*keyIt)));
         }
     } else {
-        auto addedKeysRng = rng::subrange(begin, end)
-                            | rng::views::transform([](auto& key) { return &key; });
+        auto addedKeysRng = boost::iterator_range<IteratorT>(begin, end)
+                            | boost::adaptors::transformed([](auto& key) { return &key; });
         auto addedKeys = std::vector(addedKeysRng.begin(), addedKeysRng.end());
         std::sort(addedKeys.begin(), addedKeys.end(), KeyPtrComp());
         auto uniqueEnd = std::unique(addedKeys.begin(), addedKeys.end(), KeyPtrEq());
