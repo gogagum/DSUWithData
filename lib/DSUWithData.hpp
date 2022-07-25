@@ -15,10 +15,13 @@
 #include <stdexcept>
 #include <cassert>
 #include <numeric>
+#include <ranges>
 
 #include "DefaultDSUData.hpp"
 
 namespace gdsu {
+
+    namespace rng = std::ranges;
 
     /**
      * @brief class DSUWithData<KeyT, RootDataT, SimpleDataT, Comp>
@@ -39,19 +42,32 @@ namespace gdsu {
             }
         };
 
+        struct KeyPtrEq {
+            bool operator()(const KeyT* const key1,
+                            const KeyT* const key2) const {
+                return !(Comp()(*key1, *key2) || Comp()(*key2, *key1));
+            }
+        };
+
     public:
 
         /**
          * DSU constructor from keys.
+         * @tparam uniqueKeys - to check unique keys or not. If data is
+         * guaranteed to be unique, uniqueKeys should be `true.
          * @param keys - keys list.
          */
-        DSUWithData(std::initializer_list<KeyT> keys);
+        template<bool uniqueKeys = false>
+        DSUWithData(std::initializer_list<KeyT> keys,
+                    std::bool_constant<uniqueKeys> = std::bool_constant<false>());
 
         /**
          * DSU constructor from root data objects
          * @param rootData - list of root data.
          */
-        DSUWithData(std::initializer_list<RootDataT> rootData);
+        template<bool uniqueKeys = false>
+        DSUWithData(std::initializer_list<RootDataT> rootData,
+                    std::bool_constant<uniqueKeys> = std::bool_constant<false>());
 
         /**
          * DSU constructor from container with keys objects by pair of
@@ -60,12 +76,12 @@ namespace gdsu {
          * @param begin - range beginning.
          * @param end - range ending (position after last element).
          */
-        template<class IteratorT>
-        requires std::is_same_v<
-                     typename std::iterator_traits<IteratorT>::value_type,
-                     KeyT
-                 >
-        DSUWithData(IteratorT begin, IteratorT end);
+        template<class IteratorT, bool uniqueKeys = false>
+        requires std::is_same_v<std::iter_value_t<IteratorT>, KeyT>
+                 && std::constructible_from<RootDataT, KeyT>
+        DSUWithData(IteratorT begin,
+                    IteratorT end,
+                    std::bool_constant<uniqueKeys> = std::bool_constant<false>());
 
         /**
          * DSU constructor from container with root data objects from pair of
@@ -74,28 +90,11 @@ namespace gdsu {
          * @param begin - range beginning.
          * @param end - range ending (position after last element).
          */
-        template<class IteratorT>
-        requires std::is_same_v<
-                     typename std::iterator_traits<IteratorT>::value_type,
-                     RootDataT
-                 >
-        DSUWithData(IteratorT begin, IteratorT end);
-
-        /**
-         * DSU constructor from keys set by pair of iterators.
-         * @param begin - range beginning.
-         * @param end - range ending (position after last element).
-         */
-        DSUWithData(typename std::set<KeyT, Comp>::iterator begin,
-                    typename std::set<KeyT, Comp>::iterator end);
-
-        /**
-         * DSU constructor from keys unordered_set by pair of iterators.
-         * @param begin - range beginning.
-         * @param end - range ending (position after last element).
-         */
-        DSUWithData(typename std::unordered_set<KeyT, Comp>::iterator begin,
-                    typename std::unordered_set<KeyT, Comp>::iterator end);
+        template<class IteratorT, bool uniqueKeys = false>
+        requires std::is_same_v<std::iter_value_t<IteratorT>, RootDataT>
+        DSUWithData(IteratorT begin,
+                    IteratorT end,
+                    std::bool_constant<uniqueKeys> = std::bool_constant<false>());
 
         /**
          * Join two components by keys.
@@ -203,13 +202,24 @@ namespace gdsu {
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class Comp>
+template<bool uniqueKeys>
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
-        std::initializer_list<KeyT> keys) {
-    auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
-    for (const auto& key : keys) {
-        if (!addedKeys.contains(&key)) {
-            _data.emplace(std::make_pair(addedKeys.size(), RootDataT(key)));
-            addedKeys.insert(&key);
+        std::initializer_list<KeyT> keys, std::bool_constant<uniqueKeys>) {
+    if constexpr(uniqueKeys) {
+        for (const auto [keyIt, currIdx] = { keys.begin(), std::size_t(0) };
+             keyIt != keys.end();
+             ++keyIt) {
+            _data.emplace(std::make_pair(currIdx, RootDataT(keyIt)));
+            ++currIdx;
+        }
+    } else {
+        auto addedKeysRng = keys
+                | rng::views::transform([](auto& key) { return &key; });
+        auto addedKeys = std::vector(addedKeysRng.begin(), addedKeysRng.end());
+        std::sort(addedKeys.begin(), addedKeys.end(), KeyPtrComp());
+        auto uniqueEnd = std::unique(addedKeys.begin(), addedKeys.end(), KeyPtrEq());
+        for (auto keyIt = addedKeys.begin(); keyIt < uniqueEnd; ++keyIt) {
+            _data.emplace(std::make_pair(keyIt - addedKeys.begin(), RootDataT(**keyIt)));
         }
     }
     _postConstruct();
@@ -217,88 +227,86 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
 
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class Comp>
+template<bool uniqueKeys>
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
-        std::initializer_list<RootDataT> rootData) {
-    auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
-    for (const auto& rootDataI : rootData) {
-        if (const auto& newKey = rootDataI.getKey();
-        addedKeys.contains(&newKey)) {
-            throw std::invalid_argument("Root data keys must not repeat.");
-        } else {
-            _data.emplace(
-                    std::make_pair(addedKeys.size(), RootDataT(rootDataI)));
-            addedKeys.insert(&newKey);
+        std::initializer_list<RootDataT> rootData,
+        std::bool_constant<uniqueKeys>) {
+    if constexpr (uniqueKeys) {
+        for (auto [rootDataIt, currIdx] = { rootData.begin(), std::size_t(0) };
+             rootDataIt != rootData.end();
+             ++rootDataIt, ++currIdx) {
+            _data.emplace(std::make_pair(currIdx, RootDataT(*rootDataIt)));
+            ++currIdx;
+        }
+    } else {
+        auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
+        for (const auto& rootDataI : rootData) {
+            if (const auto& newKey = rootDataI.getKey();
+                    addedKeys.contains(&newKey)) {
+                throw std::invalid_argument("Root data keys must not repeat.");
+            } else {
+                _data.emplace(
+                        std::make_pair(addedKeys.size(), RootDataT(rootDataI)));
+                addedKeys.insert(&newKey);
+            }
         }
     }
+
     _postConstruct();
 }
 
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class Comp>
-template<class IteratorT>
-requires std::is_same_v<
-             typename std::iterator_traits<IteratorT>::value_type,
-             KeyT
-         >
+template<class IteratorT, bool uniqueKeys>
+requires std::is_same_v<std::iter_value_t<IteratorT>, KeyT>
+         && std::constructible_from<RootDataT, KeyT>
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
-        IteratorT begin, IteratorT end) : _data() {
-    auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
-    for (auto keyIt = begin; keyIt != end; ++keyIt) {
-        if (const KeyT& keyRef = *keyIt;
-        !addedKeys.contains(&keyRef)) {
-            _data.emplace(
-                    std::make_pair(addedKeys.size(), RootDataT(keyRef)));
+        IteratorT begin, IteratorT end, std::bool_constant<uniqueKeys>) {
+    if constexpr(uniqueKeys) {
+        for (auto [keyIt, currIdx] = { begin, std::size_t(0) };
+             keyIt != end;
+             ++keyIt, ++currIdx) {
+            _data.emplace(std::make_pair(currIdx, RootDataT(*keyIt)));
+        }
+    } else {
+        auto addedKeysRng = rng::subrange(begin, end)
+                            | rng::views::transform([](auto& key) { return &key; });
+        auto addedKeys = std::vector(addedKeysRng.begin(), addedKeysRng.end());
+        std::sort(addedKeys.begin(), addedKeys.end(), KeyPtrComp());
+        auto uniqueEnd = std::unique(addedKeys.begin(), addedKeys.end(), KeyPtrEq());
+        for (auto keyIt = addedKeys.begin(); keyIt < uniqueEnd; ++keyIt) {
+            _data.emplace(std::make_pair(keyIt - addedKeys.begin(), RootDataT(**keyIt)));
+        }
+    }
+
+    _postConstruct();
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class Comp>
+template<class IteratorT, bool uniqueKeys>
+requires std::is_same_v<std::iter_value_t<IteratorT>, RootDataT>
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
+        IteratorT begin, IteratorT end, std::bool_constant<uniqueKeys>) {
+    if constexpr(uniqueKeys) {
+        for (auto [rootDataIt, currIdx] = { begin, std::size_t(0) };
+             rootDataIt != end;
+             ++rootDataIt, ++currIdx) {
+            const KeyT& keyRef = rootDataIt->getKey();
+            _data.emplace(std::make_pair(currIdx, RootDataT(*rootDataIt)));
+        }
+    } else {
+        auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
+        for (auto rootDataIt = begin; rootDataIt != end; ++rootDataIt) {
+            const KeyT& keyRef = rootDataIt->getKey();
+            if (addedKeys.contains(&keyRef)) {
+                throw std::invalid_argument("Root data keys must not repeat.");
+            }
+            _data.emplace(std::make_pair(addedKeys.size(), RootDataT(*rootDataIt)));
             addedKeys.insert(&keyRef);
         }
     }
-    _postConstruct();
-}
 
-//----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class Comp>
-template<class IteratorT>
-requires std::is_same_v<
-             typename std::iterator_traits<IteratorT>::value_type,
-             RootDataT
-         >
-gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
-        IteratorT begin, IteratorT end)
-        : _parents(end - begin), _data() {
-    auto addedKeys = std::set<const KeyT*, KeyPtrComp>();
-    for (auto rootDataIt = begin; rootDataIt != end; ++rootDataIt) {
-        const KeyT& keyRef = rootDataIt->getKey();
-        if (addedKeys.contains(&keyRef)) {
-            throw std::invalid_argument("Root data keys must not repeat.");
-        }
-        _data.emplace(std::make_pair(addedKeys.size(), RootDataT(*rootDataIt)));
-        addedKeys.insert(&keyRef);
-    }
-    _postConstruct();
-}
-
-//----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class Comp>
-gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
-        typename std::set<KeyT, Comp>::iterator begin,
-        typename std::set<KeyT, Comp>::iterator end) : _data() {
-    for (auto [keyIt, i] = std::make_pair(begin, 0ull);
-         keyIt != end;
-         ++keyIt, ++i) {
-        _data.emplace(std::make_pair(i, RootDataT(*keyIt)));
-    }
-    _postConstruct();
-}
-
-//----------------------------------------------------------------------------//
-template<class KeyT, class RootDataT, class Comp>
-gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
-        typename std::unordered_set<KeyT, Comp>::iterator begin,
-        typename std::unordered_set<KeyT, Comp>::iterator end) : _data() {
-    for (auto [keyIt, i] = std::make_pair(begin, 0ull);
-         keyIt != end;
-         ++keyIt, ++i) {
-        _data.emplace(std::make_pair(i, RootDataT(*keyIt)));
-    }
     _postConstruct();
 }
 

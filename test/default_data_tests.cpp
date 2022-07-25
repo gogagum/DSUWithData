@@ -132,6 +132,11 @@ TEST(DefaultData, ConstructFromUnorderedSetIterators) {
 }
 
 //----------------------------------------------------------------------------//
+TEST(DefaultData, ConstructFromUniqueKeys) {
+
+}
+
+//----------------------------------------------------------------------------//
 TEST(DefaultData, JoinByKey) {
     auto dsu = gdsu::DSUWithData<int>({0, 1});
     EXPECT_EQ(dsu.getNumberOfComponents(), 2);
