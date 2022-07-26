@@ -62,6 +62,8 @@ namespace gdsu {
 
         /**
          * DSU constructor from root data objects
+         * @tparam uniqueKeys - to check unique keys or not. If data is
+         * guaranteed to be unique, uniqueKeys should be `true.
          * @param rootData - list of root data.
          */
         template<bool uniqueKeys = false>
@@ -72,6 +74,8 @@ namespace gdsu {
          * DSU constructor from container with keys objects by pair of
          * iterators.
          * @tparam IteratorT - iterator type.
+         * @tparam uniqueKeys - to check unique keys or not. If data is
+         * guaranteed to be unique, uniqueKeys should be `true.
          * @param begin - range beginning.
          * @param end - range ending (position after last element).
          */
@@ -86,6 +90,8 @@ namespace gdsu {
          * DSU constructor from container with root data objects from pair of
          * iterators.
          * @tparam IteratorT - iterator type.
+         * @tparam uniqueKeys - to check unique keys or not. If data is
+         * guaranteed to be unique, uniqueKeys should be `true.
          * @param begin - range beginning.
          * @param end - range ending (position after last element).
          */
