@@ -10,8 +10,14 @@
 
 //----------------------------------------------------------------------------//
 TEST(DefaultData, KeysConstructor) {
-    auto dsu =
-        gdsu::DSUWithData<int>(std::initializer_list<int>{0, 1, 3});
+    auto dsu = gdsu::DSUWithData<int>{0, 1, 3};
+
+    EXPECT_EQ(dsu.getNumberOfComponents(), 3);
+}
+
+//----------------------------------------------------------------------------//
+TEST(DefaultData, KeysConstructorUniqueKeysFlag) {
+    auto dsu = gdsu::DSUWithData<int>{0, 1, 3, std::bool_constant<true>()};
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 3);
 }
@@ -43,16 +49,25 @@ TEST(DefaultData, RootDataConstructor) {
 }
 
 //----------------------------------------------------------------------------//
+TEST(DefaultData, RootDataConstructorUniqueKeysFlag) {
+    const auto dsu =
+            gdsu::DSUWithData<int>({
+                    gdsu::BaseRootDSUData<int>(1),
+                    gdsu::BaseRootDSUData<int>(2),
+                    gdsu::BaseRootDSUData<int>(3)
+                }, std::bool_constant<true>());
+
+    EXPECT_EQ(dsu.getNumberOfComponents(), 3);
+}
+
+//----------------------------------------------------------------------------//
 TEST(DefaultData, RootDataILConstructorRepeatingKeys) {
     const auto action = []{
-        const auto dsu =
-                gdsu::DSUWithData<int>(
-                    std::initializer_list<gdsu::BaseRootDSUData<int>>{
-                        gdsu::BaseRootDSUData<int>(1),
-                        gdsu::BaseRootDSUData<int>(2),
-                        gdsu::BaseRootDSUData<int>(1)
-                    }
-                );
+        const auto dsu = gdsu::DSUWithData<int>{
+                             gdsu::BaseRootDSUData<int>(1),
+                             gdsu::BaseRootDSUData<int>(2),
+                             gdsu::BaseRootDSUData<int>(1)
+                         };
     };
 
     EXPECT_THROW(action(), std::invalid_argument);
@@ -103,6 +118,16 @@ TEST(DefaultData, ConstructFromListIterators) {
 }
 
 //----------------------------------------------------------------------------//
+TEST(DefaultData, ConstructFromListIteratorsUniquKeysFlag) {
+    auto keysList = std::list{1, 2, 3};
+    auto dsu = gdsu::DSUWithData<int>{keysList.begin(), keysList.end(), std::bool_constant<true>()};
+
+    EXPECT_EQ(dsu.getNumberOfComponents(), 3);
+    dsu.join(2, 3);
+    EXPECT_EQ(dsu.getNumberOfComponents(), 2);
+}
+
+//----------------------------------------------------------------------------//
 TEST(DefaultData, ConstructFromListIteratorsRepeatingKeys) {
     auto keysVec = std::list{1, 2, 2};
     auto dsu = gdsu::DSUWithData<int>{keysVec.begin(), keysVec.end()};
@@ -122,9 +147,9 @@ TEST(DefaultData, ConstructFromSetIterators) {
 }
 
 //----------------------------------------------------------------------------//
-TEST(DefaultData, ConstructFromUnorderedSetIterators) {
-    auto keysSet = std::unordered_set{1, 2, 3, 3};
-    auto dsu = gdsu::DSUWithData<int>{keysSet.begin(), keysSet.end()};
+TEST(DefaultData, ConstructFromSetIteratorsUniqueKeysFlag) {
+    auto keysSet = std::set{1, 2, 3, 3};
+    auto dsu = gdsu::DSUWithData<int>{keysSet.begin(), keysSet.end(), std::bool_constant<true>()};
 
     EXPECT_EQ(dsu.getNumberOfComponents(), 3);
     dsu.join(2, 3);
@@ -132,8 +157,13 @@ TEST(DefaultData, ConstructFromUnorderedSetIterators) {
 }
 
 //----------------------------------------------------------------------------//
-TEST(DefaultData, ConstructFromUniqueKeys) {
+TEST(DefaultData, ConstructFromUnorderedSetIterators) {
+    auto keysSet = std::unordered_set{1, 2, 3, 3};
+    auto dsu = gdsu::DSUWithData<int>{keysSet.begin(), keysSet.end()};
 
+    EXPECT_EQ(dsu.getNumberOfComponents(), 3);
+    dsu.join(2, 3);
+    EXPECT_EQ(dsu.getNumberOfComponents(), 2);
 }
 
 //----------------------------------------------------------------------------//

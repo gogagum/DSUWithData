@@ -32,18 +32,20 @@ namespace gdsu {
     class DSUWithData {
     private:
 
+        /**
+         * struct KeyPtrComp
+         * Comparator for keys pointers.
+         */
         struct KeyPtrComp {
-            bool operator()(const KeyT* const key1,
-                            const KeyT* const key2) const {
-                return Comp()(*key1, *key2);
-            }
+            bool operator()(const KeyT* key1, const KeyT* key2) const;
         };
 
+        /**
+         * struct KeyPtrEq
+         * Equality checking function for keys pointers.
+         */
         struct KeyPtrEq {
-            bool operator()(const KeyT* const key1,
-                            const KeyT* const key2) const {
-                return !(Comp()(*key1, *key2) || Comp()(*key2, *key1));
-            }
+            bool operator()(const KeyT* key1, const KeyT* key2) const;
         };
 
     public:
@@ -229,7 +231,7 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
         std::initializer_list<RootDataT> rootData,
         std::bool_constant<uniqueKeys>) {
     if constexpr (uniqueKeys) {
-        for (auto [rootDataIt, currIdx] = { rootData.begin(), std::size_t(0) };
+        for (auto [rootDataIt, currIdx] = std::make_pair(rootData.begin(), std::size_t(0));
              rootDataIt != rootData.end();
              ++rootDataIt, ++currIdx) {
             _data.emplace(std::make_pair(currIdx, RootDataT(*rootDataIt)));
@@ -260,7 +262,7 @@ requires std::is_same_v<std::iter_value_t<IteratorT>, KeyT>
 gdsu::DSUWithData<KeyT, RootDataT, Comp>::DSUWithData(
         IteratorT begin, IteratorT end, std::bool_constant<uniqueKeys>) {
     if constexpr(uniqueKeys) {
-        for (auto [keyIt, currIdx] = { begin, std::size_t(0) };
+        for (auto [keyIt, currIdx] = std::make_pair(begin, std::size_t(0));
              keyIt != end;
              ++keyIt, ++currIdx) {
             _data.emplace(std::make_pair(currIdx, RootDataT(*keyIt)));
@@ -453,4 +455,18 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::_getRootData(
     } else {
         return dataIt->second;
     }
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class Comp>
+bool gdsu::DSUWithData<KeyT, RootDataT, Comp>::KeyPtrComp::operator()(
+        const KeyT* key1, const KeyT* key2) const {
+    return Comp()(*key1, *key2);
+}
+
+//----------------------------------------------------------------------------//
+template<class KeyT, class RootDataT, class Comp>
+bool gdsu::DSUWithData<KeyT, RootDataT, Comp>::KeyPtrEq::operator()(
+        const KeyT* key1, const KeyT* key2) const {
+    return !(Comp()(*key1, *key2) || Comp()(*key2, *key1));
 }
