@@ -33,7 +33,7 @@ jobs:
             os: ubuntu-latest,
             artifact: "ubuntu_clang.7z",
             build_type: "Debug",
-            cxx: "clang++-13",
+            cxx: "clang++-14",
             archiver: "7z a",
             generators: "Ninja"
           }
@@ -50,7 +50,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Ubuntu_Latest_GCC')
         run: |
           sudo apt-get update
-          sudo apt-get install ninja-build cmake g++-11
+          sudo apt-get install ninja-build cmake g++-11 libboost-all-dev
           ninja --version
           cmake --version
           gcc --version
@@ -58,10 +58,10 @@ jobs:
         if: startsWith(matrix.config.name, 'Ubuntu_Latest_Clang')
         run: |
           sudo apt-get update
-          sudo apt-get install ninja-build cmake
+          sudo apt-get install ninja-build cmake libboost-all-dev
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 13
+          sudo ./llvm.sh 14
           ninja --version
           cmake --version
           clang --version
