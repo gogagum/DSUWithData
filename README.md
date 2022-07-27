@@ -1,12 +1,13 @@
 # DSUWithData
 
 Data structure with possibility to set your own data into set components.
-Current version is `0.0.3`. Library is written in `C++20`.
+Current version is `0.0.4`. Library is written in `C++20`.
 
 Requirements:
 
 - `g++-12` or `clang++-14`
-- `CMake 23`
+- `libbost-1.79`
+- `CMake 22`
 
 Library files are placed in `\lib`.
 
