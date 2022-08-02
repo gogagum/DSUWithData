@@ -134,7 +134,7 @@ namespace gdsu {
          * @param key - key to search.
          * @return rootDataOfTheComponent.
          */
-        const RootDataT& getRootData(const KeyT& key);
+        const RootDataT& getRootData(const KeyT& key) const;
 
     private:
 
@@ -376,7 +376,7 @@ gdsu::DSUWithData<KeyT, RootDataT, Comp>::getNumberOfComponents() const {
 //----------------------------------------------------------------------------//
 template<class KeyT, class RootDataT, class Comp>
 const RootDataT&
-gdsu::DSUWithData<KeyT, RootDataT, Comp>::getRootData(const KeyT& key) {
+gdsu::DSUWithData<KeyT, RootDataT, Comp>::getRootData(const KeyT& key) const {
     return _getRootDataByIndex(_getIdxByKey(key));
 }
 
