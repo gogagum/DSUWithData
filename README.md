@@ -1,7 +1,7 @@
 # DSUWithData
 
 Data structure with possibility to set your own data into set components.
-Current version is `0.0.4`. Library is written in `C++20`.
+Current version is `0.0.5`. Library is written in `C++20`.
 
 Requirements:
 
